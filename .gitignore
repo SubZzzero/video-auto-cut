@@ -1,0 +1,12 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage/
+htmlcov/
+node_modules/
+dist/
+ui/dist/
+ui/coverage/
+outputs/
+temp/
