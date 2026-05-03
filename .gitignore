@@ -1,12 +1,36 @@
+# Python cache and virtualenv
 __pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Python tooling
 .pytest_cache/
 .ruff_cache/
+.mypy_cache/
 .coverage
+.coverage.*
 coverage/
 htmlcov/
+
+# Frontend dependencies and build output
 node_modules/
 dist/
 ui/dist/
 ui/coverage/
+
+# Local environment files
+.env
+.env.*
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+
+# Local runtime artifacts
 outputs/
 temp/
+*.log
