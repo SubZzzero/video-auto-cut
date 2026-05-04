@@ -89,6 +89,7 @@
   align-content: start;
   align-items: start;
   gap: 12px;
+  grid-template-rows: minmax(72px, 1fr) auto;
   min-height: 156px;
   padding: 14px;
   border: 1px solid var(--color-border);
@@ -157,6 +158,8 @@
 .setting-card select,
 .setting-card input[type='number'] {
   min-height: 48px;
+  height: 48px;
+  align-self: stretch;
 }
 
 .upload-box {
