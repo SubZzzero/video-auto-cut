@@ -131,3 +131,44 @@ def test_processor_uses_centered_crop_window(monkeypatch, tmp_path) -> None:
     )
 
     assert captured_filters == ["crop=608:1080:656:0"]
+
+
+# Verify that additional crop presets resolve to stable ffmpeg crop filters.
+def test_processor_uses_additional_crop_preset(monkeypatch, tmp_path) -> None:
+    captured_filters: list[str | None] = []
+
+    # Capture the generated crop filter from chunk mode.
+    def fake_split_by_duration(
+        source_path,
+        output_directory,
+        duration,
+        crop_filter_resolver,
+    ) -> None:
+        captured_filters.append(crop_filter_resolver(0.0, 30.0))
+
+    monkeypatch.setattr("app.video.processor.resolve_output_directory", lambda job_id: tmp_path)
+    monkeypatch.setattr("app.video.processor.read_frame_size", lambda video_path: (1920, 1080))
+    monkeypatch.setattr("app.video.processor.split_by_duration", fake_split_by_duration)
+    monkeypatch.setattr(
+        "app.video.processor.list_output_files",
+        lambda output_directory: [
+            OutputFileResponse(
+                name="chunk_001.mp4",
+                relative_path="job-1/chunk_001.mp4",
+                url="/outputs/job-1/chunk_001.mp4",
+            )
+        ],
+    )
+
+    VideoProcessor().process(
+        ProcessOptions(
+            job_id="job-1",
+            source_path=Path("demo.mp4"),
+            mode="chunk",
+            crop_mode="square_1_1",
+            duration=30,
+        ),
+        lambda progress, message: None,
+    )
+
+    assert captured_filters == ["crop=1080:1080:420:0"]

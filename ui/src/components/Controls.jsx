@@ -13,10 +13,16 @@ export default function Controls({ settings, disabled, canSubmit, onCropChange, 
       <div className="settings-grid">
         <div className="field setting-card">
           <div className="setting-copy">
-            <label htmlFor="crop">{copy.cropLabel}</label>
+            <span className="field-label" id="crop-label">{copy.cropLabel}</span>
             <p className="field-help">{copy.cropInfo}</p>
           </div>
-          <select id="crop" value={settings.crop} disabled={disabled} onChange={onCropChange}>
+          <select
+            id="crop"
+            aria-labelledby="crop-label"
+            value={settings.crop}
+            disabled={disabled}
+            onChange={onCropChange}
+          >
             {cropOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -26,11 +32,12 @@ export default function Controls({ settings, disabled, canSubmit, onCropChange, 
         </div>
         <div className="field setting-card">
           <div className="setting-copy">
-            <label htmlFor="duration">{copy.durationLabel}</label>
+            <span className="field-label" id="duration-label">{copy.durationLabel}</span>
             <p className="field-help">{copy.durationInfoChunk}</p>
           </div>
           <input
             id="duration"
+            aria-labelledby="duration-label"
             min="1"
             type="number"
             value={settings.duration}

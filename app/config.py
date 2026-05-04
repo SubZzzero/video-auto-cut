@@ -18,9 +18,19 @@ JOB_ID_TIMESTAMP_FORMAT = "%Y-%m-%d_%H-%M-%S_%f"
 MAX_BATCH_SIZE = 10
 
 SUPPORTED_PROCESS_MODES = ("chunk", "scenes")
-SUPPORTED_CROP_MODES = ("none", "vertical", "horizontal")
+SUPPORTED_CROP_MODES = (
+    "none",
+    "vertical",
+    "portrait_4_5",
+    "square_1_1",
+    "portrait_3_4",
+    "horizontal",
+)
 
 VERTICAL_RATIO = 9 / 16
+PORTRAIT_4_5_RATIO = 4 / 5
+SQUARE_1_1_RATIO = 1
+PORTRAIT_3_4_RATIO = 3 / 4
 HORIZONTAL_RATIO = 16 / 9
 
 

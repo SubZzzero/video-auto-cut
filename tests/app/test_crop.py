@@ -19,6 +19,13 @@ def test_calculate_horizontal_crop_window() -> None:
     assert crop_window == (0, 0, 1920, 1080)
 
 
+# Verify that new portrait and square crop presets stay centered and in frame.
+def test_calculate_additional_crop_windows() -> None:
+    assert calculate_crop_window(1920, 1080, 960, "portrait_4_5") == (528, 0, 864, 1080)
+    assert calculate_crop_window(1920, 1080, 960, "square_1_1") == (420, 0, 1080, 1080)
+    assert calculate_crop_window(1920, 1080, 960, "portrait_3_4") == (555, 0, 810, 1080)
+
+
 # Verify that span-aware crop shifts to keep the detected face range inside frame.
 def test_calculate_crop_window_for_subject_bounds() -> None:
     crop_window = calculate_crop_window_for_subject_bounds(1920, 1080, 650, 600, 1100, "vertical")

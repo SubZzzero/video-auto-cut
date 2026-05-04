@@ -1,12 +1,12 @@
 # Video Auto Cutter
 
-Video Auto Cutter is a local-only web app for splitting videos by fixed duration or scene changes, with optional centered crop presets for vertical and horizontal output.
+Video Auto Cutter is a local-only web app for splitting videos by fixed duration or scene changes, with optional centered crop presets for vertical, portrait, square, and horizontal output.
 
 ## Features
 
 - Fixed-duration chunk splitting
 - Scene-based splitting with PySceneDetect
-- Centered crop presets for `vertical` and `horizontal`
+- Centered crop presets for `vertical`, `portrait_4_5`, `square_1_1`, `portrait_3_4`, and `horizontal`
 - Batch queue processing in the UI
 - Polling-based progress updates
 - Local HTML5 preview before upload
@@ -92,7 +92,7 @@ Multipart fields:
 - `file`
 - `mode`: `chunk` or `scenes`
 - `duration`: positive integer seconds
-- `crop`: `none`, `vertical`, or `horizontal`
+- `crop`: `none`, `vertical`, `portrait_4_5`, `square_1_1`, `portrait_3_4`, or `horizontal`
 
 Duration behavior:
 

@@ -1,15 +1,25 @@
 """Crop window calculations."""
 
-from app.config import HORIZONTAL_RATIO, VERTICAL_RATIO
+from app.config import (
+    HORIZONTAL_RATIO,
+    PORTRAIT_3_4_RATIO,
+    PORTRAIT_4_5_RATIO,
+    SQUARE_1_1_RATIO,
+    VERTICAL_RATIO,
+)
+
+CROP_MODE_RATIOS = {
+    "vertical": VERTICAL_RATIO,
+    "portrait_4_5": PORTRAIT_4_5_RATIO,
+    "square_1_1": SQUARE_1_1_RATIO,
+    "portrait_3_4": PORTRAIT_3_4_RATIO,
+    "horizontal": HORIZONTAL_RATIO,
+}
 
 
 # Resolve the target aspect ratio for one crop mode.
 def get_target_ratio(crop_mode: str) -> float | None:
-    if crop_mode == "vertical":
-        return VERTICAL_RATIO
-    if crop_mode == "horizontal":
-        return HORIZONTAL_RATIO
-    return None
+    return CROP_MODE_RATIOS.get(crop_mode)
 
 
 # Clamp a value to an integer range.
@@ -29,11 +39,7 @@ def calculate_crop_window(
         return None
 
     source_ratio = frame_width / frame_height
-    if crop_mode == "vertical":
-        crop_height = frame_height
-        crop_width = round(crop_height * target_ratio)
-        crop_width = min(crop_width, frame_width)
-    elif source_ratio > target_ratio:
+    if source_ratio > target_ratio:
         crop_height = frame_height
         crop_width = round(crop_height * target_ratio)
     else:

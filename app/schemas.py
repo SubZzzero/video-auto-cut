@@ -17,6 +17,9 @@ class CropMode(str, Enum):
 
     NONE = "none"
     VERTICAL = "vertical"
+    PORTRAIT_4_5 = "portrait_4_5"
+    SQUARE_1_1 = "square_1_1"
+    PORTRAIT_3_4 = "portrait_3_4"
     HORIZONTAL = "horizontal"
 
 

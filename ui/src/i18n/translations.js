@@ -107,6 +107,9 @@ const translations = {
     cropModes: {
       none: 'No crop',
       vertical: 'Vertical 9:16',
+      portrait_4_5: 'Portrait 4:5',
+      square_1_1: 'Square 1:1',
+      portrait_3_4: 'Portrait 3:4',
       horizontal: 'Horizontal 16:9',
     },
     screenStates: {
@@ -192,6 +195,9 @@ const translations = {
     cropModes: {
       none: 'Без crop',
       vertical: 'Вертикальный 9:16',
+      portrait_4_5: 'Портретный 4:5',
+      square_1_1: 'Квадратный 1:1',
+      portrait_3_4: 'Портретный 3:4',
       horizontal: 'Горизонтальный 16:9',
     },
     screenStates: {
@@ -277,6 +283,9 @@ const translations = {
     cropModes: {
       none: 'Без crop',
       vertical: 'Вертикальний 9:16',
+      portrait_4_5: 'Портретний 4:5',
+      square_1_1: 'Квадратний 1:1',
+      portrait_3_4: 'Портретний 3:4',
       horizontal: 'Горизонтальний 16:9',
     },
     screenStates: {

@@ -15,7 +15,7 @@ export const DEFAULT_FORM_SETTINGS = {
 }
 
 // Keep supported crop modes centralized for UI and API calls.
-export const CROP_MODE_VALUES = ['none', 'vertical', 'horizontal']
+export const CROP_MODE_VALUES = ['none', 'vertical', 'portrait_4_5', 'square_1_1', 'portrait_3_4', 'horizontal']
 
 // Keep queue status names centralized for consistent UI rendering.
 export const QUEUE_STATUS = {
