@@ -6,14 +6,13 @@ from typing import Callable
 
 from app.config import (
     DEFAULT_CHUNK_DURATION,
-    DEFAULT_SCENE_MIN_DURATION,
     resolve_output_directory,
 )
 from app.utils.files import list_output_files
 from app.video.crop import build_crop_filter, calculate_crop_window
 from app.video.frames import read_frame_size
-from app.video.scenes import detect_scene_ranges
-from app.video.splitter import split_by_duration, split_by_ranges
+from app.video.metadata import get_video_duration
+from app.video.splitter import split_by_duration
 
 ProgressCallback = Callable[[int, str], None]
 
@@ -24,9 +23,10 @@ class ProcessOptions:
 
     job_id: str
     source_path: Path
-    mode: str
     crop_mode: str
     duration: int = DEFAULT_CHUNK_DURATION
+    start_time: float = 0.0
+    end_time: float | None = None
 
 
 class VideoProcessor:
@@ -40,30 +40,19 @@ class VideoProcessor:
     ) -> list[dict[str, str]]:
         output_directory = resolve_output_directory(options.job_id)
         crop_filter_resolver = self._build_crop_filter_resolver(options)
+        selected_start, selected_end = self._resolve_selected_range(options)
 
         update_progress(10, "Preparing video processing.")
 
-        if options.mode == "chunk":
-            update_progress(45, "Splitting video into chunks.")
-            split_by_duration(
-                options.source_path,
-                output_directory,
-                options.duration,
-                crop_filter_resolver,
-            )
-        else:
-            update_progress(35, "Detecting scene boundaries.")
-            scene_ranges = detect_scene_ranges(
-                options.source_path,
-                self._resolve_scene_minimum_duration(options),
-            )
-            update_progress(60, "Splitting video by detected scenes.")
-            split_by_ranges(
-                options.source_path,
-                output_directory,
-                scene_ranges,
-                crop_filter_resolver,
-            )
+        update_progress(45, "Splitting selected range into chunks.")
+        split_by_duration(
+            options.source_path,
+            output_directory,
+            options.duration,
+            selected_start,
+            selected_end,
+            crop_filter_resolver,
+        )
 
         update_progress(90, "Collecting generated output files.")
         outputs = [item.model_dump() for item in list_output_files(output_directory)]
@@ -73,9 +62,17 @@ class VideoProcessor:
         update_progress(100, "Processing completed.")
         return outputs
 
-    # Resolve the effective scene merge threshold for one request.
-    def _resolve_scene_minimum_duration(self, options: ProcessOptions) -> int:
-        return DEFAULT_SCENE_MIN_DURATION if options.mode == "scenes" else options.duration
+    # Resolve one safe processing window inside the source duration.
+    def _resolve_selected_range(self, options: ProcessOptions) -> tuple[float, float]:
+        total_duration = get_video_duration(options.source_path)
+        selected_start = min(max(options.start_time, 0.0), total_duration)
+        requested_end = total_duration if options.end_time is None else options.end_time
+        selected_end = min(requested_end, total_duration)
+
+        if selected_end <= selected_start:
+            raise RuntimeError("End time must be greater than start time.")
+
+        return selected_start, selected_end
 
 
     # Build a per-range crop resolver for one processing request.

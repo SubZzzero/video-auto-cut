@@ -3,7 +3,7 @@
 from copy import deepcopy
 from threading import Lock
 
-from app.schemas import CropMode, JobState, ProcessMode
+from app.schemas import CropMode, JobState
 
 
 class JobStore:
@@ -19,16 +19,18 @@ class JobStore:
         self,
         job_id: str,
         file_name: str,
-        mode: str,
         crop: str,
         duration: int,
+        start_time: float,
+        end_time: float,
     ) -> dict:
         job = {
             "jobId": job_id,
             "fileName": file_name,
-            "mode": ProcessMode(mode),
             "crop": CropMode(crop),
             "duration": duration,
+            "startTime": start_time,
+            "endTime": end_time,
             "status": JobState.QUEUED,
             "progress": 0,
             "message": "Job queued.",

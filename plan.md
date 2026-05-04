@@ -7,14 +7,14 @@
 
 Функции:
 
-* нарезка видео (по времени / по сценам)
-* scene detection
+* нарезка видео по времени
+* trimming по выбранному диапазону
 * smart crop (vertical / horizontal)
 * face detection (центрирование)
 
 Стек:
 
-* Python (FFmpeg, OpenCV, PySceneDetect)
+* Python (FFmpeg, OpenCV)
 * FastAPI (backend)
 * React + Vite (frontend)
 
@@ -66,7 +66,6 @@ ui/
 Критерии готовности:
 
 * [ ] split по времени
-* [ ] scene detection
 * [ ] crop (vertical/horizontal)
 * [ ] face detection (fallback на центр)
 
@@ -74,8 +73,6 @@ ui/
 
 * FFmpeg для обработки
 * OpenCV для лица
-* PySceneDetect для сцен
-
 ---
 
 ## ШАГ 3 — Backend (FastAPI)
@@ -90,7 +87,7 @@ ui/
 * [ ] принимает:
 
   * файл
-  * mode (chunk/scenes)
+  * startTime / endTime
   * duration
   * crop
 * [ ] возвращает статус и путь к результату
@@ -131,7 +128,7 @@ ui/
 Компоненты:
 
 * FileUpload
-* Controls (mode, crop, duration)
+* Controls (range, crop, duration)
 * Preview
 * Status
 

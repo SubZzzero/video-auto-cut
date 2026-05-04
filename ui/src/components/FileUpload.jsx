@@ -1,5 +1,5 @@
 // Render the file selection control for one or more videos.
-export default function FileUpload({ files, onChange, disabled, copy }) {
+export default function FileUpload({ items, activeItemId, onChange, onSelect, disabled, copy }) {
   return (
     <section className="panel stack">
       <div>
@@ -15,11 +15,14 @@ export default function FileUpload({ files, onChange, disabled, copy }) {
           disabled={disabled}
           onChange={onChange}
         />
-        {files.length > 0 ? (
+        {items.length > 0 ? (
           <ul className="file-list">
-            {files.map((file) => (
-              <li key={`${file.name}-${file.lastModified}`} className="file-item">
-                {file.name}
+            {items.map((item) => (
+              <li key={item.id} className={`file-item ${item.id === activeItemId ? 'file-item-active' : ''}`}>
+                <button type="button" className="file-select-button" disabled={disabled} onClick={() => onSelect(item.id)}>
+                  <span>{item.file.name}</span>
+                  <span className="file-select-meta">{copy.editRangeAction}</span>
+                </button>
               </li>
             ))}
           </ul>

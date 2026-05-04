@@ -10,11 +10,13 @@ def test_process_job_cleans_temp_directory_on_success(monkeypatch, tmp_path) -> 
     upload_directory.mkdir()
     upload_path = upload_directory / "clip.mp4"
     upload_path.write_bytes(b"data")
-    job_store.create_job("job-1", "clip.mp4", "chunk", "none", 30)
+    job_store.create_job("job-1", "clip.mp4", "none", 30, 0.0, 30.0)
 
     # Return one deterministic output payload for the completed job.
     def fake_process(self, options, update_progress):
         assert options.source_path == upload_path
+        assert options.start_time == 0.0
+        assert options.end_time == 30.0
         update_progress(50, "Halfway there.")
         return [
             {
@@ -30,9 +32,10 @@ def test_process_job_cleans_temp_directory_on_success(monkeypatch, tmp_path) -> 
         job_store,
         "job-1",
         upload_path,
-        "chunk",
         "none",
         30,
+        0.0,
+        30.0,
     )
 
     job = job_store.get_job("job-1")
@@ -49,7 +52,7 @@ def test_process_job_cleans_temp_directory_on_failure(monkeypatch, tmp_path) -> 
     upload_directory.mkdir()
     upload_path = upload_directory / "clip.mp4"
     upload_path.write_bytes(b"data")
-    job_store.create_job("job-2", "clip.mp4", "chunk", "none", 30)
+    job_store.create_job("job-2", "clip.mp4", "none", 30, 10.0, 40.0)
 
     # Raise one deterministic processing error for the failed job.
     def fake_process(self, options, update_progress):
@@ -61,9 +64,10 @@ def test_process_job_cleans_temp_directory_on_failure(monkeypatch, tmp_path) -> 
         job_store,
         "job-2",
         upload_path,
-        "chunk",
         "none",
         30,
+        10.0,
+        40.0,
     )
 
     job = job_store.get_job("job-2")

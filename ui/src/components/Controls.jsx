@@ -1,8 +1,32 @@
+import VideoRangeEditor from './VideoRangeEditor'
 import { getCropOptions } from '../i18n/translations'
 
 // Render processing settings and the main action button.
-export default function Controls({ settings, disabled, canSubmit, onCropChange, onDurationChange, onSubmit, copy }) {
+export default function Controls({
+  activeItem,
+  disabled,
+  canSubmit,
+  onCropChange,
+  onDurationChange,
+  onStartTimeChange,
+  onEndTimeChange,
+  onStartSliderChange,
+  onEndSliderChange,
+  onSubmit,
+  copy,
+}) {
   const cropOptions = getCropOptions(copy)
+
+  if (!activeItem) {
+    return (
+      <section className="panel stack controls-panel">
+        <div className="controls-header">
+          <h2>{copy.settingsTitle}</h2>
+          <p className="hint">{copy.settingsEmpty}</p>
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="panel stack controls-panel">
@@ -10,6 +34,15 @@ export default function Controls({ settings, disabled, canSubmit, onCropChange, 
         <h2>{copy.settingsTitle}</h2>
         <p className="hint">{copy.settingsHint}</p>
       </div>
+      <VideoRangeEditor
+        item={activeItem}
+        disabled={disabled}
+        onStartTimeChange={onStartTimeChange}
+        onEndTimeChange={onEndTimeChange}
+        onStartSliderChange={onStartSliderChange}
+        onEndSliderChange={onEndSliderChange}
+        copy={copy}
+      />
       <div className="settings-grid">
         <div className="field setting-card">
           <div className="setting-copy">
@@ -19,7 +52,7 @@ export default function Controls({ settings, disabled, canSubmit, onCropChange, 
           <select
             id="crop"
             aria-labelledby="crop-label"
-            value={settings.crop}
+            value={activeItem.crop}
             disabled={disabled}
             onChange={onCropChange}
           >
@@ -40,7 +73,7 @@ export default function Controls({ settings, disabled, canSubmit, onCropChange, 
             aria-labelledby="duration-label"
             min="1"
             type="number"
-            value={settings.duration}
+            value={activeItem.duration}
             disabled={disabled}
             onChange={onDurationChange}
           />

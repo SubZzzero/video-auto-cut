@@ -21,9 +21,7 @@ from api.services.processing_service import process_job
 from app.config import (
     DEFAULT_CHUNK_DURATION,
     DEFAULT_CROP_MODE,
-    DEFAULT_PROCESS_MODE,
     SUPPORTED_CROP_MODES,
-    SUPPORTED_PROCESS_MODES,
     build_job_id,
     ensure_runtime_directories,
     resolve_upload_path,
@@ -32,16 +30,6 @@ from app.schemas import JobResponse, JobStatusResponse
 
 router = APIRouter(tags=["process"])
 logger = logging.getLogger(__name__)
-
-
-# Validate one processing mode string.
-def validate_mode(mode: str) -> str:
-    if mode not in SUPPORTED_PROCESS_MODES:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="Unsupported mode.",
-        )
-    return mode
 
 
 # Validate one crop mode string.
@@ -75,19 +63,29 @@ async def create_process_job(
     background_tasks: BackgroundTasks,
     file: Annotated[UploadFile, File()],
     job_store: Annotated[JobStore, Depends(get_job_store)],
-    mode: Annotated[str, Form()] = DEFAULT_PROCESS_MODE,
     duration: Annotated[int, Form()] = DEFAULT_CHUNK_DURATION,
     crop: Annotated[str, Form()] = DEFAULT_CROP_MODE,
+    start_time: Annotated[float, Form(alias="startTime")] = 0.0,
+    end_time: Annotated[float, Form(alias="endTime")] = 0.0,
 ) -> JobResponse:
     """Create one video processing job."""
 
     ensure_runtime_directories()
-    validated_mode = validate_mode(mode)
     validated_crop = validate_crop(crop)
     if duration <= 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Duration must be positive.",
+        )
+    if start_time < 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Start time must be zero or greater.",
+        )
+    if end_time <= start_time:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="End time must be greater than start time.",
         )
 
     job_id = build_job_id()
@@ -95,9 +93,10 @@ async def create_process_job(
     job = job_store.create_job(
         job_id,
         file.filename or upload_path.name,
-        validated_mode,
         validated_crop,
         duration,
+        start_time,
+        end_time,
     )
     logger.info("Created processing job %s for %s.", job_id, job["fileName"])
     background_tasks.add_task(
@@ -105,9 +104,10 @@ async def create_process_job(
         job_store,
         job_id,
         upload_path,
-        validated_mode,
         validated_crop,
         duration,
+        start_time,
+        end_time,
     )
     return JobResponse.model_validate(job)
 

@@ -1,15 +1,16 @@
 # Video Auto Cutter
 
-Video Auto Cutter is a local-only web app for splitting videos by fixed duration or scene changes, with optional centered crop presets for vertical, portrait, square, and horizontal output.
+Video Auto Cutter is a local-only web app for trimming a selected video range, splitting it into custom-length clips, and applying optional centered crop presets for vertical, portrait, square, and horizontal output.
 
 ## Features
 
 - Fixed-duration chunk splitting
-- Scene-based splitting with PySceneDetect
+- Start and end range trimming before processing
+- Custom segment length for generated clips
 - Centered crop presets for `vertical`, `portrait_4_5`, `square_1_1`, `portrait_3_4`, and `horizontal`
 - Batch queue processing in the UI
 - Polling-based progress updates
-- Local HTML5 preview before upload
+- Local HTML5 preview with duration-aware range controls before upload
 - UI language switcher with `EN`, `RU`, and `UA`
 - One-command local start after dependency setup
 
@@ -19,7 +20,6 @@ Video Auto Cutter is a local-only web app for splitting videos by fixed duration
 - FastAPI
 - FFmpeg
 - OpenCV
-- PySceneDetect
 - React
 - Vite
 - Axios
@@ -90,18 +90,16 @@ npm run dev
 Multipart fields:
 
 - `file`
-- `mode`: `chunk` or `scenes`
 - `duration`: positive integer seconds
+- `startTime`: start offset in seconds
+- `endTime`: end offset in seconds and must be greater than `startTime`
 - `crop`: `none`, `vertical`, `portrait_4_5`, `square_1_1`, `portrait_3_4`, or `horizontal`
 
-Duration behavior:
+Behavior:
 
-- `chunk`: target clip length
-- `scenes`: keeps detected scene boundaries and ignores the duration input
-
-Scene fallback behavior:
-
-- if no scene boundaries are detected, the full clip is still processed as one output
+- only the selected `startTime -> endTime` range is processed
+- `duration` defines the target length for each generated clip inside that range
+- the last clip is trimmed so it never extends beyond `endTime`
 
 Response:
 
@@ -112,7 +110,7 @@ Response:
 
 ### `GET /jobs/{job_id}`
 
-Returns current job status, progress, outputs, and any error message.
+Returns current job status, progress, selected range, outputs, and any error message.
 
 ## Lint
 
@@ -149,3 +147,4 @@ npm run test
 - The app is local-only and does not use cloud services.
 - Progress updates use polling instead of websockets to keep the MVP stable.
 - Crop presets are deterministic and stay centered on the frame.
+- Time selection is driven by browser metadata, so uploaded files can be trimmed before backend processing starts.

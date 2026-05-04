@@ -16,9 +16,10 @@ def process_job(
     job_store: JobStore,
     job_id: str,
     upload_path: Path,
-    mode: str,
     crop: str,
     duration: int,
+    start_time: float,
+    end_time: float,
 ) -> None:
     processor = VideoProcessor()
     logger.info("Started background processing for job %s.", job_id)
@@ -37,9 +38,10 @@ def process_job(
             ProcessOptions(
                 job_id=job_id,
                 source_path=upload_path,
-                mode=mode,
                 crop_mode=crop,
                 duration=duration,
+                start_time=start_time,
+                end_time=end_time,
             ),
             update_progress,
         )

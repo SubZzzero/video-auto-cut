@@ -6,9 +6,11 @@ from app.schemas import JobState
 def test_create_job() -> None:
     store = JobStore()
 
-    job = store.create_job("job-1", "clip.mp4", "chunk", "none", 30)
+    job = store.create_job("job-1", "clip.mp4", "none", 30, 5.0, 35.0)
 
     assert job["jobId"] == "job-1"
+    assert job["startTime"] == 5.0
+    assert job["endTime"] == 35.0
     assert job["status"] == JobState.QUEUED
     assert job["outputs"] == []
 
@@ -16,7 +18,7 @@ def test_create_job() -> None:
 # Verify that job updates are persisted.
 def test_update_job() -> None:
     store = JobStore()
-    store.create_job("job-1", "clip.mp4", "chunk", "none", 30)
+    store.create_job("job-1", "clip.mp4", "none", 30, 0.0, 30.0)
 
     updated = store.update_job("job-1", progress=50, message="Halfway there.")
 

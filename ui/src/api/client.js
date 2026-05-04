@@ -10,9 +10,10 @@ const client = axios.create({
 export async function createProcessJob(file, settings) {
   const formData = new FormData()
   formData.append('file', file)
-  formData.append('mode', settings.mode)
   formData.append('duration', String(settings.duration))
   formData.append('crop', settings.crop)
+  formData.append('startTime', String(settings.startTime))
+  formData.append('endTime', String(settings.endTime))
 
   const response = await client.post('/process', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

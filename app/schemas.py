@@ -5,13 +5,6 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 
-class ProcessMode(str, Enum):
-    """Supported processing modes."""
-
-    CHUNK = "chunk"
-    SCENES = "scenes"
-
-
 class CropMode(str, Enum):
     """Supported crop modes."""
 
@@ -54,9 +47,10 @@ class JobStatusResponse(BaseModel):
 
     job_id: str = Field(alias="jobId")
     file_name: str = Field(alias="fileName")
-    mode: ProcessMode
     crop: CropMode
     duration: int
+    start_time: float = Field(alias="startTime")
+    end_time: float = Field(alias="endTime")
     status: JobState
     progress: int
     message: str
