@@ -9,7 +9,11 @@ from app.config import (
     resolve_output_directory,
 )
 from app.utils.files import list_output_files
-from app.video.crop import build_crop_filter, calculate_crop_window
+from app.video.crop import (
+    build_crop_filter,
+    calculate_crop_window,
+    calculate_positioned_crop_window,
+)
 from app.video.frames import read_frame_size
 from app.video.metadata import get_video_duration
 from app.video.splitter import split_by_duration
@@ -24,6 +28,8 @@ class ProcessOptions:
     job_id: str
     source_path: Path
     crop_mode: str
+    crop_x: int | None = None
+    crop_y: int | None = None
     duration: int = DEFAULT_CHUNK_DURATION
     start_time: float = 0.0
     end_time: float | None = None
@@ -93,10 +99,22 @@ class VideoProcessor:
         options: ProcessOptions,
     ) -> str | None:
         frame_width, frame_height = read_frame_size(options.source_path)
-        crop_window = calculate_crop_window(
+        crop_x = options.crop_x
+        crop_y = options.crop_y
+        if crop_x is None or crop_y is None:
+            crop_window = calculate_crop_window(
+                frame_width,
+                frame_height,
+                frame_width // 2,
+                options.crop_mode,
+            )
+            return build_crop_filter(crop_window)
+
+        crop_window = calculate_positioned_crop_window(
             frame_width,
             frame_height,
-            frame_width // 2,
+            crop_x,
+            crop_y,
             options.crop_mode,
         )
         return build_crop_filter(crop_window)

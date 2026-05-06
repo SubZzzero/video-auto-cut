@@ -7,11 +7,13 @@ export default function Controls({
   disabled,
   canSubmit,
   onCropChange,
+  onCropPositionChange,
   onDurationChange,
   onStartTimeChange,
   onEndTimeChange,
   onStartSliderChange,
   onEndSliderChange,
+  onVideoMetadataChange,
   onSubmit,
   copy,
 }) {
@@ -41,6 +43,8 @@ export default function Controls({
         onEndTimeChange={onEndTimeChange}
         onStartSliderChange={onStartSliderChange}
         onEndSliderChange={onEndSliderChange}
+        onCropPositionChange={onCropPositionChange}
+        onVideoMetadataChange={onVideoMetadataChange}
         copy={copy}
       />
       <div className="settings-grid">

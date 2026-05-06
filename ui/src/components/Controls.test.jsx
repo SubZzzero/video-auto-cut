@@ -25,11 +25,13 @@ test('keeps the duration input enabled', () => {
       disabled={false}
       canSubmit
       onCropChange={() => {}}
+      onCropPositionChange={() => {}}
       onDurationChange={() => {}}
       onStartTimeChange={() => {}}
       onEndTimeChange={() => {}}
       onStartSliderChange={() => {}}
       onEndSliderChange={() => {}}
+      onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
       copy={copy}
     />,
@@ -47,11 +49,13 @@ test('shows the chunk duration helper copy', () => {
       disabled={false}
       canSubmit
       onCropChange={() => {}}
+      onCropPositionChange={() => {}}
       onDurationChange={() => {}}
       onStartTimeChange={() => {}}
       onEndTimeChange={() => {}}
       onStartSliderChange={() => {}}
       onEndSliderChange={() => {}}
+      onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
       copy={copy}
     />,
@@ -69,11 +73,13 @@ test('shows crop helper copy and selected range details', () => {
       disabled={false}
       canSubmit
       onCropChange={() => {}}
+      onCropPositionChange={() => {}}
       onDurationChange={() => {}}
       onStartTimeChange={() => {}}
       onEndTimeChange={() => {}}
       onStartSliderChange={() => {}}
       onEndSliderChange={() => {}}
+      onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
       copy={copy}
     />,
@@ -96,11 +102,13 @@ test('calls onSubmit when the start button is clicked', () => {
       disabled={false}
       canSubmit
       onCropChange={() => {}}
+      onCropPositionChange={() => {}}
       onDurationChange={() => {}}
       onStartTimeChange={() => {}}
       onEndTimeChange={() => {}}
       onStartSliderChange={() => {}}
       onEndSliderChange={() => {}}
+      onVideoMetadataChange={() => {}}
       onSubmit={onSubmit}
       copy={copy}
     />,
@@ -123,11 +131,13 @@ test('forwards start and end time input changes', () => {
       disabled={false}
       canSubmit
       onCropChange={() => {}}
+      onCropPositionChange={() => {}}
       onDurationChange={() => {}}
       onStartTimeChange={onStartTimeChange}
       onEndTimeChange={onEndTimeChange}
       onStartSliderChange={() => {}}
       onEndSliderChange={() => {}}
+      onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
       copy={copy}
     />,

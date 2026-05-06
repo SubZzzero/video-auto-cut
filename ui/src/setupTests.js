@@ -14,7 +14,16 @@ function ensureObjectUrlSupport() {
 }
 
 
+// Provide pointer-event support for drag interaction tests.
+function ensurePointerEventSupport() {
+  if (!window.PointerEvent) {
+    window.PointerEvent = MouseEvent
+  }
+}
+
+
 ensureObjectUrlSupport()
+ensurePointerEventSupport()
 
 // Reset the rendered DOM between tests.
 afterEach(() => {

@@ -1,5 +1,6 @@
 from app.video.crop import (
     build_crop_filter,
+    calculate_positioned_crop_window,
     calculate_crop_window,
     calculate_crop_window_for_subject_bounds,
 )
@@ -31,6 +32,20 @@ def test_calculate_crop_window_for_subject_bounds() -> None:
     crop_window = calculate_crop_window_for_subject_bounds(1920, 1080, 650, 600, 1100, "vertical")
 
     assert crop_window == (492, 0, 608, 1080)
+
+
+# Verify that positioned crop windows use the requested origin when valid.
+def test_calculate_positioned_crop_window() -> None:
+    crop_window = calculate_positioned_crop_window(1920, 1080, 300, 0, "vertical")
+
+    assert crop_window == (300, 0, 608, 1080)
+
+
+# Verify that positioned crop windows are clamped inside the frame.
+def test_calculate_positioned_crop_window_clamps_to_bounds() -> None:
+    crop_window = calculate_positioned_crop_window(1920, 1200, 1200, 400, "square_1_1")
+
+    assert crop_window == (720, 0, 1200, 1200)
 
 
 # Verify that crop filter strings are generated correctly.

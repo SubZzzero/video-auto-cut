@@ -48,6 +48,8 @@ class JobStatusResponse(BaseModel):
     job_id: str = Field(alias="jobId")
     file_name: str = Field(alias="fileName")
     crop: CropMode
+    crop_x: int | None = Field(alias="cropX")
+    crop_y: int | None = Field(alias="cropY")
     duration: int
     start_time: float = Field(alias="startTime")
     end_time: float = Field(alias="endTime")

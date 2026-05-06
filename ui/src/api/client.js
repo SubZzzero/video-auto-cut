@@ -12,6 +12,12 @@ export async function createProcessJob(file, settings) {
   formData.append('file', file)
   formData.append('duration', String(settings.duration))
   formData.append('crop', settings.crop)
+  if (Number.isInteger(settings.cropX)) {
+    formData.append('cropX', String(settings.cropX))
+  }
+  if (Number.isInteger(settings.cropY)) {
+    formData.append('cropY', String(settings.cropY))
+  }
   formData.append('startTime', String(settings.startTime))
   formData.append('endTime', String(settings.endTime))
 

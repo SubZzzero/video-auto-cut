@@ -25,6 +25,15 @@ export const TIME_RANGE_STEP_SECONDS = 1
 // Keep supported crop modes centralized for UI and API calls.
 export const CROP_MODE_VALUES = ['none', 'vertical', 'portrait_4_5', 'square_1_1', 'portrait_3_4', 'horizontal']
 
+// Keep frontend crop ratio math aligned with backend presets.
+export const CROP_PRESET_RATIOS = {
+  vertical: { width: 9, height: 16 },
+  portrait_4_5: { width: 4, height: 5 },
+  square_1_1: { width: 1, height: 1 },
+  portrait_3_4: { width: 3, height: 4 },
+  horizontal: { width: 16, height: 9 },
+}
+
 // Keep queue status names centralized for consistent UI rendering.
 export const QUEUE_STATUS = {
   queued: 'queued',

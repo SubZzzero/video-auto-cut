@@ -29,6 +29,17 @@ def test_create_process_job_rejects_reversed_range() -> None:
     assert response.status_code == 422
 
 
+# Verify that invalid crop coordinates are rejected.
+def test_create_process_job_rejects_negative_crop_position() -> None:
+    response = client.post(
+        "/process",
+        data={"duration": 30, "crop": "vertical", "cropX": -5, "cropY": 10, "startTime": 0, "endTime": 30},
+        files={"file": ("clip.mp4", b"data", "video/mp4")},
+    )
+
+    assert response.status_code == 422
+
+
 # Verify that a job can be created and then polled.
 def test_create_process_job_and_poll_status(monkeypatch) -> None:
     monkeypatch.setattr(
@@ -37,7 +48,9 @@ def test_create_process_job_and_poll_status(monkeypatch) -> None:
     )
 
     # Complete the background job immediately for deterministic polling.
-    def fake_process_job(store, job_id, upload_path, crop, duration, start_time, end_time):
+    def fake_process_job(store, job_id, upload_path, crop, crop_x, crop_y, duration, start_time, end_time):
+        assert crop_x == 240
+        assert crop_y == 120
         store.update_job(
             job_id,
             status=JobState.SUCCESS,
@@ -57,7 +70,7 @@ def test_create_process_job_and_poll_status(monkeypatch) -> None:
 
     create_response = client.post(
         "/process",
-        data={"duration": 30, "crop": "none", "startTime": 120, "endTime": 180},
+        data={"duration": 30, "crop": "vertical", "cropX": 240, "cropY": 120, "startTime": 120, "endTime": 180},
         files={"file": ("clip.mp4", b"data", "video/mp4")},
     )
 
@@ -71,6 +84,9 @@ def test_create_process_job_and_poll_status(monkeypatch) -> None:
     assert status_response.status_code == 200
     status_payload = status_response.json()
     assert status_payload["status"] == JobState.SUCCESS
+    assert status_payload["crop"] == "vertical"
+    assert status_payload["cropX"] == 240
+    assert status_payload["cropY"] == 120
     assert status_payload["startTime"] == 120
     assert status_payload["endTime"] == 180
     assert status_payload["outputs"][0]["name"] == "chunk_001.mp4"

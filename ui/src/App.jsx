@@ -14,6 +14,11 @@ import {
   STATUS_POLL_INTERVAL_MS,
 } from './config/constants'
 import { getTranslation } from './i18n/translations'
+import {
+  isPresetSelected,
+  resolveCropPlacement,
+  resolveCropPositionForPreset,
+} from './utils/crop'
 import { getErrorMessage } from './utils/errors'
 import { createQueueItems, sleep } from './utils/queue'
 import {
@@ -21,7 +26,7 @@ import {
   resolveEndTime,
   resolveStartTime,
 } from './utils/time'
-import { loadVideoDuration } from './utils/video'
+import { loadVideoMetadata } from './utils/video'
 
 // Normalize a number input into a valid chunk duration.
 function parseDuration(value) {
@@ -34,15 +39,78 @@ function parseDuration(value) {
 }
 
 
-// Build one default settings object for a file with known duration.
-function buildDefaultItemSettings(durationSeconds) {
+// Build one default settings object for a file with known metadata.
+function buildDefaultItemSettings(videoMetadata) {
   return {
     crop: DEFAULT_FORM_SETTINGS.crop,
     duration: DEFAULT_FORM_SETTINGS.duration,
     startTime: 0,
-    endTime: durationSeconds,
-    durationSeconds,
+    endTime: videoMetadata.durationSeconds,
+    durationSeconds: videoMetadata.durationSeconds,
+    sourceWidth: videoMetadata.sourceWidth,
+    sourceHeight: videoMetadata.sourceHeight,
+    cropX: null,
+    cropY: null,
     metadataError: '',
+  }
+}
+
+
+// Build one fallback settings object when metadata loading fails.
+function buildMetadataFallbackSettings() {
+  return {
+    ...buildDefaultItemSettings({
+      durationSeconds: MIN_RANGE_DURATION_SECONDS,
+      sourceWidth: 0,
+      sourceHeight: 0,
+    }),
+    metadataError: '',
+  }
+}
+
+
+// Resolve the next crop patch for one queue item and preset change.
+function buildCropPresetPatch(item, nextCrop) {
+  if (!isPresetSelected(nextCrop)) {
+    return { crop: nextCrop, cropX: null, cropY: null }
+  }
+
+  if (item.sourceWidth <= 0 || item.sourceHeight <= 0) {
+    return { crop: nextCrop, cropX: null, cropY: null }
+  }
+
+  const nextPosition = resolveCropPositionForPreset(
+    item.sourceWidth,
+    item.sourceHeight,
+    item.crop,
+    nextCrop,
+    item.cropX,
+    item.cropY,
+  )
+  return {
+    crop: nextCrop,
+    cropX: nextPosition.cropX,
+    cropY: nextPosition.cropY,
+  }
+}
+
+
+// Reconcile crop placement after fresh source metadata becomes available.
+function buildMetadataPatch(item, sourceWidth, sourceHeight) {
+  const basePatch = {
+    sourceWidth,
+    sourceHeight,
+  }
+
+  if (!isPresetSelected(item.crop)) {
+    return basePatch
+  }
+
+  const placement = resolveCropPlacement(sourceWidth, sourceHeight, item.crop, item.cropX, item.cropY)
+  return {
+    ...basePatch,
+    cropX: placement?.cropX ?? null,
+    cropY: placement?.cropY ?? null,
   }
 }
 
@@ -52,11 +120,11 @@ async function buildQueueItemsWithMetadata(files) {
   const settingsList = await Promise.all(
     files.map(async (file) => {
       try {
-        const durationSeconds = await loadVideoDuration(file)
-        return buildDefaultItemSettings(durationSeconds)
+        const videoMetadata = await loadVideoMetadata(file)
+        return buildDefaultItemSettings(videoMetadata)
       } catch (error) {
         return {
-          ...buildDefaultItemSettings(MIN_RANGE_DURATION_SECONDS),
+          ...buildMetadataFallbackSettings(),
           metadataError: getErrorMessage(error),
         }
       }
@@ -110,7 +178,29 @@ export default function App() {
       return
     }
 
-    updateQueueItem(activeItem.id, { crop: event.target.value })
+    updateQueueItem(activeItem.id, buildCropPresetPatch(activeItem, event.target.value))
+  }
+
+  // Update the active queue item crop coordinates from the preview overlay.
+  function handleCropPositionChange(nextCropPosition) {
+    if (!activeItem) {
+      return
+    }
+
+    updateQueueItem(activeItem.id, nextCropPosition)
+  }
+
+  // Update source metadata for the active item from the rendered preview.
+  function handleVideoMetadataChange(nextMetadata) {
+    if (!activeItem) {
+      return
+    }
+
+    if (nextMetadata.sourceWidth === activeItem.sourceWidth && nextMetadata.sourceHeight === activeItem.sourceHeight) {
+      return
+    }
+
+    updateQueueItem(activeItem.id, buildMetadataPatch(activeItem, nextMetadata.sourceWidth, nextMetadata.sourceHeight))
   }
 
   // Update the active queue item chunk duration.
@@ -183,6 +273,8 @@ export default function App() {
     while (true) {
       const status = await getJobStatus(jobId)
       updateQueueItem(itemId, {
+        cropX: status.cropX ?? null,
+        cropY: status.cropY ?? null,
         status: status.status,
         progress: status.progress,
         message: status.message,
@@ -262,11 +354,13 @@ export default function App() {
             disabled={isRunning}
             canSubmit={canSubmit}
             onCropChange={handleCropChange}
+            onCropPositionChange={handleCropPositionChange}
             onDurationChange={handleDurationChange}
             onStartTimeChange={handleStartTimeChange}
             onEndTimeChange={handleEndTimeChange}
             onStartSliderChange={handleStartSliderChange}
             onEndSliderChange={handleEndSliderChange}
+            onVideoMetadataChange={handleVideoMetadataChange}
             onSubmit={handleStartProcessing}
             copy={copy}
           />

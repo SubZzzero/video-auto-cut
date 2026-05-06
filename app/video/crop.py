@@ -22,18 +22,12 @@ def get_target_ratio(crop_mode: str) -> float | None:
     return CROP_MODE_RATIOS.get(crop_mode)
 
 
-# Clamp a value to an integer range.
-def clamp(value: int, minimum: int, maximum: int) -> int:
-    return max(minimum, min(value, maximum))
-
-
-# Calculate a stable crop window around a subject center.
-def calculate_crop_window(
+# Calculate one in-frame crop size for a target preset.
+def calculate_crop_size(
     frame_width: int,
     frame_height: int,
-    subject_center_x: int,
     crop_mode: str,
-) -> tuple[int, int, int, int] | None:
+) -> tuple[int, int] | None:
     target_ratio = get_target_ratio(crop_mode)
     if target_ratio is None:
         return None
@@ -48,10 +42,69 @@ def calculate_crop_window(
 
     crop_width = max(2, crop_width - (crop_width % 2))
     crop_height = max(2, crop_height - (crop_height % 2))
+    return crop_width, crop_height
+
+
+# Clamp a value to an integer range.
+def clamp(value: int, minimum: int, maximum: int) -> int:
+    return max(minimum, min(value, maximum))
+
+
+# Clamp a crop origin so the full crop stays inside frame bounds.
+def clamp_crop_position(
+    frame_width: int,
+    frame_height: int,
+    crop_width: int,
+    crop_height: int,
+    crop_x: int,
+    crop_y: int,
+) -> tuple[int, int]:
+    return (
+        clamp(crop_x, 0, frame_width - crop_width),
+        clamp(crop_y, 0, frame_height - crop_height),
+    )
+
+
+# Calculate a stable crop window around a subject center.
+def calculate_crop_window(
+    frame_width: int,
+    frame_height: int,
+    subject_center_x: int,
+    crop_mode: str,
+) -> tuple[int, int, int, int] | None:
+    crop_size = calculate_crop_size(frame_width, frame_height, crop_mode)
+    if crop_size is None:
+        return None
+
+    crop_width, crop_height = crop_size
 
     x = clamp(subject_center_x - crop_width // 2, 0, frame_width - crop_width)
     y = clamp((frame_height - crop_height) // 2, 0, frame_height - crop_height)
     return x, y, crop_width, crop_height
+
+
+# Calculate one crop window from an explicit requested origin.
+def calculate_positioned_crop_window(
+    frame_width: int,
+    frame_height: int,
+    crop_x: int,
+    crop_y: int,
+    crop_mode: str,
+) -> tuple[int, int, int, int] | None:
+    crop_size = calculate_crop_size(frame_width, frame_height, crop_mode)
+    if crop_size is None:
+        return None
+
+    crop_width, crop_height = crop_size
+    safe_x, safe_y = clamp_crop_position(
+        frame_width,
+        frame_height,
+        crop_width,
+        crop_height,
+        crop_x,
+        crop_y,
+    )
+    return safe_x, safe_y, crop_width, crop_height
 
 
 # Shift one crop window so it covers the detected subject bounds when possible.

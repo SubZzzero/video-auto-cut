@@ -65,6 +65,8 @@ async def create_process_job(
     job_store: Annotated[JobStore, Depends(get_job_store)],
     duration: Annotated[int, Form()] = DEFAULT_CHUNK_DURATION,
     crop: Annotated[str, Form()] = DEFAULT_CROP_MODE,
+    crop_x: Annotated[int | None, Form(alias="cropX")] = None,
+    crop_y: Annotated[int | None, Form(alias="cropY")] = None,
     start_time: Annotated[float, Form(alias="startTime")] = 0.0,
     end_time: Annotated[float, Form(alias="endTime")] = 0.0,
 ) -> JobResponse:
@@ -76,6 +78,11 @@ async def create_process_job(
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="Duration must be positive.",
+        )
+    if (crop_x is not None and crop_x < 0) or (crop_y is not None and crop_y < 0):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="Crop position must be zero or greater.",
         )
     if start_time < 0:
         raise HTTPException(
@@ -94,6 +101,8 @@ async def create_process_job(
         job_id,
         file.filename or upload_path.name,
         validated_crop,
+        crop_x,
+        crop_y,
         duration,
         start_time,
         end_time,
@@ -105,6 +114,8 @@ async def create_process_job(
         job_id,
         upload_path,
         validated_crop,
+        crop_x,
+        crop_y,
         duration,
         start_time,
         end_time,
