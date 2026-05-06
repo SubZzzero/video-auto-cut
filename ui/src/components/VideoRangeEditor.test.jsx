@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 
@@ -39,7 +39,20 @@ function initializeRenderedVideo(item) {
   Object.defineProperty(video, 'duration', { configurable: true, value: item.durationSeconds })
   Object.defineProperty(video, 'videoWidth', { configurable: true, value: item.sourceWidth })
   Object.defineProperty(video, 'videoHeight', { configurable: true, value: item.sourceHeight })
+  Object.defineProperty(video, 'paused', { configurable: true, writable: true, value: true })
+  Object.defineProperty(video, 'ended', { configurable: true, writable: true, value: false })
+  video.currentTime = 0
+  video.play = vi.fn().mockImplementation(async () => {
+    video.paused = false
+    fireEvent.play(video)
+  })
+  video.pause = vi.fn().mockImplementation(() => {
+    video.paused = true
+    fireEvent.pause(video)
+  })
   fireEvent.loadedMetadata(video)
+
+  return video
 }
 
 
@@ -59,8 +72,8 @@ function renderEditor(itemOverrides = {}, propOverrides = {}) {
   }
 
   render(<VideoRangeEditor {...props} />)
-  initializeRenderedVideo(props.item)
-  return props
+  const video = initializeRenderedVideo(props.item)
+  return { ...props, video }
 }
 
 
@@ -129,6 +142,63 @@ test('shows the crop overlay for a selected preset', () => {
 
   expect(screen.getByTestId('crop-overlay')).toBeInTheDocument()
   expect(screen.getByTestId('crop-frame')).toHaveStyle({ width: '225px', height: '400px' })
+})
+
+
+// Verify that crop mode hides native controls and shows the compact transport row.
+test('uses compact playback controls while crop mode is active', () => {
+  const { video } = renderEditor({ crop: 'vertical', cropX: 175, cropY: 0 })
+
+  expect(video).not.toHaveAttribute('controls')
+  expect(screen.getByRole('button', { name: copy.playPreview })).toBeInTheDocument()
+  expect(screen.getByRole('slider', { name: copy.previewSeekLabel })).toBeInTheDocument()
+  expect(screen.getByText('00:00:00 / 00:10:00')).toBeInTheDocument()
+})
+
+
+// Verify that the compact transport toggles preview playback.
+test('toggles preview playback from the compact transport row', async () => {
+  const { video } = renderEditor({ crop: 'vertical', cropX: 175, cropY: 0 })
+
+  fireEvent.click(screen.getByRole('button', { name: copy.playPreview }))
+
+  await waitFor(() => {
+    expect(video.play).toHaveBeenCalled()
+    expect(screen.getByRole('button', { name: copy.pausePreview })).toBeInTheDocument()
+  })
+
+  video.currentTime = 42
+  fireEvent.timeUpdate(video)
+
+  expect(screen.getByText('00:00:42 / 00:10:00')).toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: copy.pausePreview }))
+
+  expect(video.pause).toHaveBeenCalled()
+  expect(screen.getByRole('button', { name: copy.playPreview })).toBeInTheDocument()
+})
+
+
+// Verify that the compact transport slider seeks the preview time.
+test('seeks preview playback from the compact transport slider', () => {
+  const { video } = renderEditor({ crop: 'vertical', cropX: 175, cropY: 0 })
+
+  fireEvent.change(screen.getByRole('slider', { name: copy.previewSeekLabel }), {
+    target: { value: '135' },
+  })
+
+  expect(video.currentTime).toBe(135)
+  expect(screen.getByText('00:02:15 / 00:10:00')).toBeInTheDocument()
+})
+
+
+// Verify that non-crop mode keeps native browser controls available.
+test('keeps native controls when no crop preset is selected', () => {
+  const { video } = renderEditor()
+
+  expect(video).toHaveAttribute('controls')
+  expect(screen.queryByRole('button', { name: copy.playPreview })).not.toBeInTheDocument()
+  expect(screen.queryByRole('slider', { name: copy.previewSeekLabel })).not.toBeInTheDocument()
 })
 
 

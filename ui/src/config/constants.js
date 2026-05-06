@@ -22,6 +22,9 @@ export const MIN_RANGE_DURATION_SECONDS = 1
 // Keep slider steps aligned with second-based trimming.
 export const TIME_RANGE_STEP_SECONDS = 1
 
+// Keep preview seek controls easy to tune from one place.
+export const PREVIEW_SEEK_STEP_SECONDS = 1
+
 // Keep supported crop modes centralized for UI and API calls.
 export const CROP_MODE_VALUES = ['none', 'vertical', 'portrait_4_5', 'square_1_1', 'portrait_3_4', 'horizontal']
 

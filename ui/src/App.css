@@ -262,15 +262,19 @@
 .video-preview {
   display: block;
   width: 100%;
-  border-radius: 14px;
+  border-radius: 0;
   background: #000;
 }
 
 .video-preview-shell {
   position: relative;
   overflow: hidden;
-  border-radius: 14px;
+  border-radius: 0;
   background: #000;
+}
+
+.video-preview-interactive {
+  cursor: pointer;
 }
 
 .crop-overlay {
@@ -296,6 +300,49 @@
 
 .crop-frame-dragging {
   cursor: grabbing;
+}
+
+.preview-transport {
+  display: grid;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: rgba(11, 15, 20, 0.92);
+}
+
+.preview-transport-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.preview-playback-button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.preview-playback-button:hover {
+  border-color: rgba(250, 204, 21, 0.28);
+}
+
+.preview-timecode {
+  color: var(--color-text-muted);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.preview-seek-slider {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--color-accent);
 }
 
 .range-metrics {

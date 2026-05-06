@@ -100,6 +100,10 @@ const translations = {
     previewTitle: 'Preview',
     previewHint: 'Preview uses the local file and does not wait for backend processing.',
     previewEmpty: 'Select a file to preview it here.',
+    previewPlaybackLabel: 'Preview playback',
+    previewSeekLabel: 'Preview seek control',
+    playPreview: 'Play preview',
+    pausePreview: 'Pause preview',
     statusTitle: 'Status',
     statusEmpty: 'Upload files to create a processing queue.',
     statusMetrics: {
@@ -192,6 +196,10 @@ const translations = {
     previewTitle: 'Превью',
     previewHint: 'Превью использует локальный файл и не ждет backend обработку.',
     previewEmpty: 'Выбери файл, чтобы увидеть превью.',
+    previewPlaybackLabel: 'Управление превью',
+    previewSeekLabel: 'Ползунок перемотки превью',
+    playPreview: 'Воспроизвести',
+    pausePreview: 'Пауза',
     statusTitle: 'Статус',
     statusEmpty: 'Загрузи файлы, чтобы создать очередь обработки.',
     statusMetrics: {
@@ -284,6 +292,10 @@ const translations = {
     previewTitle: 'Превʼю',
     previewHint: 'Превʼю використовує локальний файл і не чекає на backend обробку.',
     previewEmpty: 'Обери файл, щоб побачити превʼю.',
+    previewPlaybackLabel: 'Керування превʼю',
+    previewSeekLabel: 'Повзунок перемотування превʼю',
+    playPreview: 'Відтворити',
+    pausePreview: 'Пауза',
     statusTitle: 'Статус',
     statusEmpty: 'Завантаж файли, щоб створити чергу обробки.',
     statusMetrics: {

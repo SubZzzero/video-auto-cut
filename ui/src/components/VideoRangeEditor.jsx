@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 
 import {
+  PREVIEW_SEEK_STEP_SECONDS,
   MIN_RANGE_DURATION_SECONDS,
   TIME_RANGE_STEP_SECONDS,
 } from '../config/constants'
@@ -124,12 +125,15 @@ export default function VideoRangeEditor({
   const dragStateRef = useRef(null)
   const [videoRect, setVideoRect] = useState({ width: 0, height: 0 })
   const [isDragging, setIsDragging] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
   const [activeTimeField, setActiveTimeField] = useState(null)
   const [startTimeDraft, setStartTimeDraft] = useState(formattedStartTime)
   const [endTimeDraft, setEndTimeDraft] = useState(formattedEndTime)
   const cropPlacement = resolveCropPlacement(item.sourceWidth, item.sourceHeight, item.crop, item.cropX, item.cropY)
   const displayCropBox = buildDisplayCropBox(cropPlacement, item.sourceWidth, item.sourceHeight, videoRect)
   const isOverlayVisible = isPresetSelected(item.crop) && Boolean(displayCropBox)
+  const playbackTimeLabel = `${formatClockValue(currentTime)} / ${formatClockValue(item.durationSeconds)}`
 
   useEffect(() => {
     if (itemIdRef.current === item.id) {
@@ -137,6 +141,8 @@ export default function VideoRangeEditor({
     }
 
     itemIdRef.current = item.id
+    setCurrentTime(0)
+    setIsPlaying(false)
     setActiveTimeField(null)
     setStartTimeDraft(formattedStartTime)
     setEndTimeDraft(formattedEndTime)
@@ -171,6 +177,16 @@ export default function VideoRangeEditor({
     })
   }
 
+  // Keep the visible playback timer aligned with the live preview element.
+  function syncCurrentTime() {
+    const videoElement = videoRef.current
+    if (!videoElement) {
+      return
+    }
+
+    setCurrentTime(videoElement.currentTime)
+  }
+
   useEffect(() => {
     syncVideoRect()
 
@@ -193,6 +209,8 @@ export default function VideoRangeEditor({
   // Keep source metadata aligned with the actual browser-loaded preview.
   function handleLoadedMetadata(event) {
     syncVideoRect()
+    setCurrentTime(event.currentTarget.currentTime)
+    setIsPlaying(false)
 
     try {
       onVideoMetadataChange(normalizeVideoMetadata(event.currentTarget))
@@ -220,6 +238,51 @@ export default function VideoRangeEditor({
       scaleY: item.sourceHeight / videoRect.height,
     }
     setIsDragging(true)
+  }
+
+  // Toggle preview playback without relying on native browser controls.
+  async function togglePreviewPlayback() {
+    const videoElement = videoRef.current
+    if (!videoElement) {
+      return
+    }
+
+    if (videoElement.paused || videoElement.ended) {
+      try {
+        await videoElement.play()
+      } catch {
+        // Ignore blocked playback attempts and keep the current UI state.
+      }
+      return
+    }
+
+    videoElement.pause()
+  }
+
+  // Allow quick play and pause directly from the cropped preview surface.
+  function handlePreviewClick() {
+    if (!isOverlayVisible) {
+      return
+    }
+
+    void togglePreviewPlayback()
+  }
+
+  // Route compact transport button clicks to the shared playback toggle.
+  function handleTransportButtonClick() {
+    void togglePreviewPlayback()
+  }
+
+  // Seek the local preview to one exact second from the transport slider.
+  function handlePreviewSeekChange(event) {
+    const videoElement = videoRef.current
+    if (!videoElement) {
+      return
+    }
+
+    const nextTime = Number(event.target.value)
+    videoElement.currentTime = nextTime
+    setCurrentTime(nextTime)
   }
 
   // Keep the raw start-time draft visible while the user is typing.
@@ -284,6 +347,11 @@ export default function VideoRangeEditor({
     }
   }
 
+  // Mirror the current preview playback state into the compact transport row.
+  function handlePlaybackStateChange(event) {
+    setIsPlaying(!event.currentTarget.paused && !event.currentTarget.ended)
+  }
+
   useEffect(() => {
     if (!isDragging) {
       return undefined
@@ -339,11 +407,16 @@ export default function VideoRangeEditor({
       <div className="video-preview-shell">
         <video
           ref={videoRef}
-          className="video-preview"
+          className={`video-preview ${isOverlayVisible ? 'video-preview-interactive' : ''}`}
           src={previewUrl}
-          controls
+          controls={!isOverlayVisible}
           preload="metadata"
+          onClick={handlePreviewClick}
           onLoadedMetadata={handleLoadedMetadata}
+          onTimeUpdate={syncCurrentTime}
+          onPlay={handlePlaybackStateChange}
+          onPause={handlePlaybackStateChange}
+          onEnded={handlePlaybackStateChange}
         />
         {isOverlayVisible ? (
           <div className="crop-overlay" data-testid="crop-overlay" aria-hidden="true">
@@ -389,6 +462,26 @@ export default function VideoRangeEditor({
           </div>
         ) : null}
       </div>
+      {isOverlayVisible ? (
+        <div className="preview-transport" aria-label={copy.previewPlaybackLabel}>
+          <div className="preview-transport-main">
+            <button type="button" className="preview-playback-button" onClick={handleTransportButtonClick}>
+              {isPlaying ? copy.pausePreview : copy.playPreview}
+            </button>
+            <span className="preview-timecode">{playbackTimeLabel}</span>
+          </div>
+          <input
+            type="range"
+            className="preview-seek-slider"
+            aria-label={copy.previewSeekLabel}
+            min="0"
+            max={String(maxDuration)}
+            step={String(PREVIEW_SEEK_STEP_SECONDS)}
+            value={Math.min(currentTime, maxDuration)}
+            onChange={handlePreviewSeekChange}
+          />
+        </div>
+      ) : null}
       <div className="range-metrics" role="list" aria-label={copy.rangeMetricsLabel}>
         <div className="range-metric" role="listitem">
           <span className="range-metric-label">{copy.totalDurationLabel}</span>
