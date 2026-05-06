@@ -58,6 +58,50 @@ function buildDisplayCropBox(cropPlacement, sourceWidth, sourceHeight, videoRect
 }
 
 
+const TIME_SEGMENT_RANGES = [
+  { start: 0, end: 2 },
+  { start: 3, end: 5 },
+  { start: 6, end: 8 },
+]
+
+
+// Detect whether one caret index points at a fixed time separator.
+function isTimeSeparatorIndex(value, index) {
+  return index >= 0 && index < value.length && value[index] === ':'
+}
+
+
+// Detect whether one input selection includes a fixed time separator.
+function selectionIncludesTimeSeparator(value, start, end) {
+  return value.slice(start, end).includes(':')
+}
+
+
+// Snap one mixed selection onto the nearest digit-only time segment.
+function resolveTimeSegmentSelection(start, end) {
+  const selectionCenter = (start + end) / 2
+  let bestSegment = TIME_SEGMENT_RANGES[0]
+  let bestOverlap = -1
+  let bestDistance = Number.POSITIVE_INFINITY
+
+  for (const segment of TIME_SEGMENT_RANGES) {
+    const overlapStart = Math.max(start, segment.start)
+    const overlapEnd = Math.min(end, segment.end)
+    const overlap = Math.max(overlapEnd - overlapStart, 0)
+    const segmentCenter = (segment.start + segment.end) / 2
+    const distance = Math.abs(selectionCenter - segmentCenter)
+
+    if (overlap > bestOverlap || (overlap === bestOverlap && distance < bestDistance)) {
+      bestSegment = segment
+      bestOverlap = overlap
+      bestDistance = distance
+    }
+  }
+
+  return bestSegment
+}
+
+
 // Render local preview and range controls for one queued file.
 export default function VideoRangeEditor({
   item,
@@ -73,13 +117,42 @@ export default function VideoRangeEditor({
   const previewUrl = usePreviewUrl(item.file)
   const maxDuration = Math.max(item.durationSeconds, MIN_RANGE_DURATION_SECONDS)
   const selectedDuration = Math.max(item.endTime - item.startTime, 0)
+  const formattedStartTime = formatClockValue(item.startTime)
+  const formattedEndTime = formatClockValue(item.endTime)
+  const itemIdRef = useRef(item.id)
   const videoRef = useRef(null)
   const dragStateRef = useRef(null)
   const [videoRect, setVideoRect] = useState({ width: 0, height: 0 })
   const [isDragging, setIsDragging] = useState(false)
+  const [activeTimeField, setActiveTimeField] = useState(null)
+  const [startTimeDraft, setStartTimeDraft] = useState(formattedStartTime)
+  const [endTimeDraft, setEndTimeDraft] = useState(formattedEndTime)
   const cropPlacement = resolveCropPlacement(item.sourceWidth, item.sourceHeight, item.crop, item.cropX, item.cropY)
   const displayCropBox = buildDisplayCropBox(cropPlacement, item.sourceWidth, item.sourceHeight, videoRect)
   const isOverlayVisible = isPresetSelected(item.crop) && Boolean(displayCropBox)
+
+  useEffect(() => {
+    if (itemIdRef.current === item.id) {
+      return
+    }
+
+    itemIdRef.current = item.id
+    setActiveTimeField(null)
+    setStartTimeDraft(formattedStartTime)
+    setEndTimeDraft(formattedEndTime)
+  }, [formattedEndTime, formattedStartTime, item.id])
+
+  useEffect(() => {
+    if (activeTimeField !== 'start') {
+      setStartTimeDraft(formattedStartTime)
+    }
+  }, [activeTimeField, formattedStartTime])
+
+  useEffect(() => {
+    if (activeTimeField !== 'end') {
+      setEndTimeDraft(formattedEndTime)
+    }
+  }, [activeTimeField, formattedEndTime])
 
   // Refresh rendered overlay measurements after layout changes.
   function syncVideoRect() {
@@ -149,6 +222,68 @@ export default function VideoRangeEditor({
     setIsDragging(true)
   }
 
+  // Keep the raw start-time draft visible while the user is typing.
+  function handleStartInputChange(event) {
+    setActiveTimeField('start')
+    setStartTimeDraft(event.target.value)
+    onStartTimeChange(event)
+  }
+
+  // Keep the raw end-time draft visible while the user is typing.
+  function handleEndInputChange(event) {
+    setActiveTimeField('end')
+    setEndTimeDraft(event.target.value)
+    onEndTimeChange(event)
+  }
+
+  // Restore the canonical formatted start time after editing completes.
+  function handleStartInputBlur() {
+    setActiveTimeField((currentField) => (currentField === 'start' ? null : currentField))
+    setStartTimeDraft(formattedStartTime)
+  }
+
+  // Restore the canonical formatted end time after editing completes.
+  function handleEndInputBlur() {
+    setActiveTimeField((currentField) => (currentField === 'end' ? null : currentField))
+    setEndTimeDraft(formattedEndTime)
+  }
+
+  // Keep time-field selections inside one digit segment without selecting separators.
+  function handleTimeInputSelect(event) {
+    const { currentTarget } = event
+    const selectionStart = currentTarget.selectionStart ?? 0
+    const selectionEnd = currentTarget.selectionEnd ?? selectionStart
+
+    if (selectionStart === selectionEnd || !selectionIncludesTimeSeparator(currentTarget.value, selectionStart, selectionEnd)) {
+      return
+    }
+
+    const nextSelection = resolveTimeSegmentSelection(selectionStart, selectionEnd)
+    currentTarget.setSelectionRange(nextSelection.start, nextSelection.end)
+  }
+
+  // Keep fixed `HH:MM:SS` separators from being removed during editing.
+  function handleTimeInputKeyDown(event) {
+    const { key, currentTarget } = event
+    const selectionStart = currentTarget.selectionStart ?? 0
+    const selectionEnd = currentTarget.selectionEnd ?? selectionStart
+    const hasSelection = selectionStart !== selectionEnd
+
+    if (hasSelection) {
+      return
+    }
+
+    if (key === 'Backspace' && isTimeSeparatorIndex(currentTarget.value, selectionStart - 1)) {
+      event.preventDefault()
+      currentTarget.setSelectionRange(selectionStart - 1, selectionStart - 1)
+    }
+
+    if (key === 'Delete' && isTimeSeparatorIndex(currentTarget.value, selectionStart)) {
+      event.preventDefault()
+      currentTarget.setSelectionRange(selectionStart + 1, selectionStart + 1)
+    }
+  }
+
   useEffect(() => {
     if (!isDragging) {
       return undefined
@@ -199,7 +334,7 @@ export default function VideoRangeEditor({
           <h3>{copy.rangeEditorTitle}</h3>
           <p className="field-help">{copy.rangeEditorHint}</p>
         </div>
-        <span className="range-file-name">{item.file.name}</span>
+        {/* <span className="range-file-name">{item.file.name}</span> */}
       </div>
       <div className="video-preview-shell">
         <video
@@ -278,9 +413,13 @@ export default function VideoRangeEditor({
           <input
             id="start-time"
             inputMode="numeric"
-            value={formatClockValue(item.startTime)}
+            value={activeTimeField === 'start' ? startTimeDraft : formattedStartTime}
             disabled={disabled}
-            onChange={onStartTimeChange}
+            onFocus={() => setActiveTimeField('start')}
+            onBlur={handleStartInputBlur}
+            onSelect={handleTimeInputSelect}
+            onKeyDown={handleTimeInputKeyDown}
+            onChange={handleStartInputChange}
           />
         </div>
         <div className="field">
@@ -288,9 +427,13 @@ export default function VideoRangeEditor({
           <input
             id="end-time"
             inputMode="numeric"
-            value={formatClockValue(item.endTime)}
+            value={activeTimeField === 'end' ? endTimeDraft : formattedEndTime}
             disabled={disabled}
-            onChange={onEndTimeChange}
+            onFocus={() => setActiveTimeField('end')}
+            onBlur={handleEndInputBlur}
+            onSelect={handleTimeInputSelect}
+            onKeyDown={handleTimeInputKeyDown}
+            onChange={handleEndInputChange}
           />
         </div>
       </div>

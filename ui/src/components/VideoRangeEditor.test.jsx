@@ -1,7 +1,15 @@
+import { useState } from 'react'
+
 import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { expect, test, vi } from 'vitest'
 
 import { getTranslation } from '../i18n/translations'
+import {
+  parseClockInput,
+  resolveEndTime,
+  resolveStartTime,
+} from '../utils/time'
 import VideoRangeEditor from './VideoRangeEditor'
 
 const copy = getTranslation('en')
@@ -21,6 +29,20 @@ const baseItem = {
 }
 
 
+// Apply stable layout and metadata to the rendered preview element.
+function initializeRenderedVideo(item) {
+  const video = document.querySelector('video')
+  Object.defineProperty(video, 'getBoundingClientRect', {
+    configurable: true,
+    value: () => ({ width: 400, height: 400, top: 0, left: 0, right: 400, bottom: 400 }),
+  })
+  Object.defineProperty(video, 'duration', { configurable: true, value: item.durationSeconds })
+  Object.defineProperty(video, 'videoWidth', { configurable: true, value: item.sourceWidth })
+  Object.defineProperty(video, 'videoHeight', { configurable: true, value: item.sourceHeight })
+  fireEvent.loadedMetadata(video)
+}
+
+
 // Render the editor with stable video layout and metadata.
 function renderEditor(itemOverrides = {}, propOverrides = {}) {
   const props = {
@@ -37,16 +59,59 @@ function renderEditor(itemOverrides = {}, propOverrides = {}) {
   }
 
   render(<VideoRangeEditor {...props} />)
-  const video = document.querySelector('video')
-  Object.defineProperty(video, 'getBoundingClientRect', {
-    configurable: true,
-    value: () => ({ width: 400, height: 400, top: 0, left: 0, right: 400, bottom: 400 }),
-  })
-  Object.defineProperty(video, 'duration', { configurable: true, value: props.item.durationSeconds })
-  Object.defineProperty(video, 'videoWidth', { configurable: true, value: props.item.sourceWidth })
-  Object.defineProperty(video, 'videoHeight', { configurable: true, value: props.item.sourceHeight })
-  fireEvent.loadedMetadata(video)
+  initializeRenderedVideo(props.item)
   return props
+}
+
+
+// Reproduce App-level controlled updates while editing one range input.
+function TimeEditingHarness() {
+  const [item, setItem] = useState(baseItem)
+
+  // Mirror the start-time state update used by the queue layer.
+  function handleStartTimeChange(event) {
+    setItem((currentItem) => ({
+      ...currentItem,
+      startTime: resolveStartTime(
+        parseClockInput(event.target.value),
+        currentItem.endTime,
+        currentItem.durationSeconds,
+      ),
+    }))
+  }
+
+  // Mirror the end-time state update used by the queue layer.
+  function handleEndTimeChange(event) {
+    setItem((currentItem) => ({
+      ...currentItem,
+      endTime: resolveEndTime(
+        parseClockInput(event.target.value),
+        currentItem.startTime,
+        currentItem.durationSeconds,
+      ),
+    }))
+  }
+
+  return (
+    <VideoRangeEditor
+      item={item}
+      disabled={false}
+      onStartTimeChange={handleStartTimeChange}
+      onEndTimeChange={handleEndTimeChange}
+      onStartSliderChange={() => {}}
+      onEndSliderChange={() => {}}
+      onCropPositionChange={() => {}}
+      onVideoMetadataChange={() => {}}
+      copy={copy}
+    />
+  )
+}
+
+
+// Render the editor with stateful time updates for typing interactions.
+function renderTimeEditingHarness() {
+  render(<TimeEditingHarness />)
+  initializeRenderedVideo(baseItem)
 }
 
 
@@ -138,4 +203,60 @@ test('forwards loaded video metadata to the parent', () => {
     sourceWidth: 800,
     sourceHeight: 800,
   })
+})
+
+
+// Verify that replacing the minute segment keeps the edit in the start field.
+test('keeps minute-segment edits stable in the start time input', async () => {
+  const user = userEvent.setup()
+  renderTimeEditingHarness()
+
+  const input = screen.getByLabelText(copy.startTimeLabel)
+  input.focus()
+  input.setSelectionRange(3, 5)
+  await user.keyboard('10')
+
+  expect(input).toHaveValue('00:10:00')
+})
+
+
+// Verify that replacing the minute segment keeps the edit in the end field.
+test('keeps minute-segment edits stable in the end time input', async () => {
+  const user = userEvent.setup()
+  renderTimeEditingHarness()
+
+  const input = screen.getByLabelText(copy.endTimeLabel)
+  input.focus()
+  input.setSelectionRange(3, 5)
+  await user.keyboard('11')
+
+  expect(input).toHaveValue('00:11:00')
+})
+
+
+// Verify that fixed separators cannot be removed with backspace.
+test('keeps time separators visible during backspace edits', async () => {
+  const user = userEvent.setup()
+  renderTimeEditingHarness()
+
+  const input = screen.getByLabelText(copy.startTimeLabel)
+  input.focus()
+  input.setSelectionRange(3, 3)
+  await user.keyboard('{Backspace}')
+
+  expect(input).toHaveValue('00:02:00')
+})
+
+
+// Verify that selections snap away from fixed separators.
+test('snaps mixed selections to one time segment', () => {
+  renderTimeEditingHarness()
+
+  const input = screen.getByLabelText(copy.startTimeLabel)
+  input.focus()
+  input.setSelectionRange(2, 5)
+  fireEvent.select(input)
+
+  expect(input.selectionStart).toBe(3)
+  expect(input.selectionEnd).toBe(5)
 })
