@@ -9,6 +9,7 @@ import { translateErrorMessage } from '../i18n/translations'
 import {
   isPresetSelected,
   resolveCropPlacement,
+  snapCropPosition,
 } from '../utils/crop'
 import {
   formatClockValue,
@@ -378,7 +379,15 @@ export default function VideoRangeEditor({
         return
       }
 
-      onCropPositionChange({ cropX: nextPlacement.cropX, cropY: nextPlacement.cropY })
+      const snappedPosition = snapCropPosition(
+        dragState.sourceWidth,
+        dragState.sourceHeight,
+        nextPlacement.cropWidth,
+        nextPlacement.cropHeight,
+        nextPlacement.cropX,
+        nextPlacement.cropY,
+      )
+      onCropPositionChange(snappedPosition)
     }
 
     // Finish the current drag interaction.

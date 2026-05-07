@@ -263,6 +263,29 @@ test('clamps drag movement inside the video bounds', () => {
 })
 
 
+// Verify that drag updates snap onto the horizontal center guide when close enough.
+test('snaps drag movement to the center guide when the frame is close enough', () => {
+  const onCropPositionChange = vi.fn()
+  renderEditor(
+    {
+      crop: 'square_1_1',
+      cropX: 0,
+      cropY: 0,
+      sourceWidth: 800,
+      sourceHeight: 600,
+    },
+    { onCropPositionChange },
+  )
+
+  fireEvent.pointerDown(screen.getByTestId('crop-frame'), { clientX: 100, clientY: 80 })
+  fireEvent.pointerMove(window, { clientX: 146, clientY: 80 })
+  fireEvent.pointerUp(window)
+
+  expect(onCropPositionChange).toHaveBeenCalled()
+  expect(onCropPositionChange).toHaveBeenLastCalledWith({ cropX: 100, cropY: 0 })
+})
+
+
 // Verify that loaded metadata is forwarded to the parent state layer.
 test('forwards loaded video metadata to the parent', () => {
   const onVideoMetadataChange = vi.fn()

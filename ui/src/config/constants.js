@@ -37,6 +37,15 @@ export const CROP_PRESET_RATIOS = {
   horizontal: { width: 16, height: 9 },
 }
 
+// Keep crop snapping responsive without tying it to rendered preview pixels.
+export const CROP_FRAME_SNAP_THRESHOLD_RATIO = 0.03
+
+// Keep the minimum crop snapping threshold large enough to feel usable.
+export const CROP_FRAME_SNAP_THRESHOLD_MIN_PX = 12
+
+// Keep the maximum crop snapping threshold from feeling too aggressive.
+export const CROP_FRAME_SNAP_THRESHOLD_MAX_PX = 48
+
 // Keep queue status names centralized for consistent UI rendering.
 export const QUEUE_STATUS = {
   queued: 'queued',

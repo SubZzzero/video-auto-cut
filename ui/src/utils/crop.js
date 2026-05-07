@@ -1,9 +1,38 @@
-import { CROP_PRESET_RATIOS } from '../config/constants'
+import {
+  CROP_FRAME_SNAP_THRESHOLD_MAX_PX,
+  CROP_FRAME_SNAP_THRESHOLD_MIN_PX,
+  CROP_FRAME_SNAP_THRESHOLD_RATIO,
+  CROP_PRESET_RATIOS,
+} from '../config/constants'
 
 
 // Keep crop dimensions aligned with ffmpeg-friendly even pixel sizes.
 function toEvenDimension(value) {
   return Math.max(2, value - (value % 2))
+}
+
+
+// Clamp one numeric value into a bounded range.
+function clampValue(value, minimum, maximum) {
+  return Math.max(minimum, Math.min(value, maximum))
+}
+
+
+// Resolve one stable crop snap threshold from source-space geometry.
+function resolveCropSnapThreshold(sourceWidth, sourceHeight) {
+  const smallestSourceDimension = Math.min(sourceWidth, sourceHeight)
+  const scaledThreshold = Math.round(smallestSourceDimension * CROP_FRAME_SNAP_THRESHOLD_RATIO)
+  return clampValue(scaledThreshold, CROP_FRAME_SNAP_THRESHOLD_MIN_PX, CROP_FRAME_SNAP_THRESHOLD_MAX_PX)
+}
+
+
+// Snap one value to one guide when it is close enough.
+function snapValueToGuide(value, guide, threshold) {
+  if (Math.abs(value - guide) <= threshold) {
+    return guide
+  }
+
+  return value
 }
 
 
@@ -49,9 +78,29 @@ export function calculateCropSize(sourceWidth, sourceHeight, cropMode) {
 // Clamp one crop origin so the full frame remains inside source bounds.
 export function clampCropPosition(sourceWidth, sourceHeight, cropWidth, cropHeight, cropX, cropY) {
   return {
-    cropX: Math.max(0, Math.min(cropX, sourceWidth - cropWidth)),
-    cropY: Math.max(0, Math.min(cropY, sourceHeight - cropHeight)),
+    cropX: clampValue(cropX, 0, sourceWidth - cropWidth),
+    cropY: clampValue(cropY, 0, sourceHeight - cropHeight),
   }
+}
+
+
+// Snap one crop origin to edge and center guides when it is close enough.
+export function snapCropPosition(sourceWidth, sourceHeight, cropWidth, cropHeight, cropX, cropY) {
+  const threshold = resolveCropSnapThreshold(sourceWidth, sourceHeight)
+  const centeredX = Math.round((sourceWidth - cropWidth) / 2)
+  const centeredY = Math.round((sourceHeight - cropHeight) / 2)
+  const maximumX = sourceWidth - cropWidth
+  const maximumY = sourceHeight - cropHeight
+  const snappedX = [0, centeredX, maximumX].reduce(
+    (currentValue, guide) => snapValueToGuide(currentValue, guide, threshold),
+    cropX,
+  )
+  const snappedY = [0, centeredY, maximumY].reduce(
+    (currentValue, guide) => snapValueToGuide(currentValue, guide, threshold),
+    cropY,
+  )
+
+  return clampCropPosition(sourceWidth, sourceHeight, cropWidth, cropHeight, snappedX, snappedY)
 }
 
 
