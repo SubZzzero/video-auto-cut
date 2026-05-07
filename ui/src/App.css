@@ -290,8 +290,8 @@
 
 .crop-frame {
   position: absolute;
-  border: 2px solid rgba(250, 204, 21, 0.95);
-  box-shadow: 0 0 0 1px rgba(11, 15, 20, 0.8), inset 0 0 0 1px rgba(11, 15, 20, 0.28);
+  border: 2px solid #38bdf8;
+  box-shadow: 0 0 0 1px rgba(11, 15, 20, 0.82), 0 0 0 3px rgba(56, 189, 248, 0.16), inset 0 0 0 1px rgba(11, 15, 20, 0.28);
   background: transparent;
   cursor: grab;
   pointer-events: auto;
@@ -469,15 +469,92 @@
 
 .progress-track {
   overflow: hidden;
+  position: relative;
   width: 100%;
   height: 10px;
   border-radius: 999px;
-  background: #1a212d;
+  background: linear-gradient(180deg, rgba(26, 33, 45, 0.96), rgba(19, 24, 34, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
 }
 
 .progress-value {
+  position: relative;
   height: 100%;
-  background: var(--color-accent);
+  border-radius: inherit;
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.9), rgba(251, 191, 36, 1));
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.28);
+  transition: width 260ms ease, background 220ms ease, box-shadow 220ms ease, opacity 220ms ease;
+}
+
+.progress-value::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.08) 35%, rgba(255, 255, 255, 0.4) 50%, rgba(255, 255, 255, 0.08) 65%, transparent 100%);
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.progress-track-queued .progress-value {
+  background: linear-gradient(90deg, rgba(100, 116, 139, 0.46), rgba(148, 163, 184, 0.6));
+  box-shadow: none;
+}
+
+.progress-track-uploading .progress-value,
+.progress-track-processing .progress-value {
+  animation: progress-pulse 1.8s ease-in-out infinite;
+}
+
+.progress-track-uploading .progress-value::after,
+.progress-track-processing .progress-value::after {
+  opacity: 1;
+  animation: progress-sheen 1.5s linear infinite;
+}
+
+.progress-track-success {
+  box-shadow: inset 0 0 0 1px rgba(34, 197, 94, 0.16);
+}
+
+.progress-track-success .progress-value {
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.28);
+}
+
+.progress-track-success .progress-value::after {
+  opacity: 0;
+  animation: none;
+}
+
+.progress-track-error {
+  box-shadow: inset 0 0 0 1px rgba(248, 113, 113, 0.18);
+}
+
+.progress-track-error .progress-value {
+  background: linear-gradient(90deg, rgba(248, 113, 113, 0.92), rgba(239, 68, 68, 1));
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.22);
+}
+
+@keyframes progress-sheen {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes progress-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 12px rgba(250, 204, 21, 0.22);
+    filter: saturate(1);
+  }
+
+  50% {
+    box-shadow: 0 0 18px rgba(250, 204, 21, 0.38);
+    filter: saturate(1.08);
+  }
 }
 
 .queue-header,

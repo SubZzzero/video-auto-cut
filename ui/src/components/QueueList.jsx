@@ -26,7 +26,7 @@ export default function QueueList({ items, copy }) {
                 </div>
                 <p className="queue-range">{formatQueueRange(item)}</p>
                 <p className="queue-meta">{translateRuntimeMessage(item.message, copy)}</p>
-                <ProgressBar value={item.progress} />
+                <ProgressBar value={item.progress} status={item.status} />
               {item.metadataError ? <p className="error-text">{translateErrorMessage(item.metadataError, copy)}</p> : null}
               {item.error ? <p className="error-text">{translateErrorMessage(item.error, copy)}</p> : null}
               <ResultList outputs={item.outputs} copy={copy} />
