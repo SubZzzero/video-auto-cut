@@ -29,27 +29,6 @@ export function createQueueItems(files, buildSettings) {
   return files.map((file, index) => createQueueItem(file, index, buildSettings(file, index)))
 }
 
-// Derive the top-level UI state from the current queue.
-export function deriveScreenState(queueItems, isRunning) {
-  if (queueItems.length === 0) {
-    return 'idle'
-  }
-
-  if (isRunning || queueItems.some((item) => item.status === QUEUE_STATUS.processing || item.status === QUEUE_STATUS.uploading)) {
-    return 'loading'
-  }
-
-  if (queueItems.some((item) => item.status === QUEUE_STATUS.error)) {
-    return 'error'
-  }
-
-  if (queueItems.every((item) => item.status === QUEUE_STATUS.success)) {
-    return 'success'
-  }
-
-  return 'idle'
-}
-
 // Wait between poll requests without blocking the UI thread.
 export function sleep(duration) {
   return new Promise((resolve) => window.setTimeout(resolve, duration))

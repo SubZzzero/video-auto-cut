@@ -33,7 +33,14 @@ def test_create_process_job_rejects_reversed_range() -> None:
 def test_create_process_job_rejects_negative_crop_position() -> None:
     response = client.post(
         "/process",
-        data={"duration": 30, "crop": "vertical", "cropX": -5, "cropY": 10, "startTime": 0, "endTime": 30},
+        data={
+            "duration": 30,
+            "crop": "vertical",
+            "cropX": -5,
+            "cropY": 10,
+            "startTime": 0,
+            "endTime": 30,
+        },
         files={"file": ("clip.mp4", b"data", "video/mp4")},
     )
 
@@ -48,7 +55,17 @@ def test_create_process_job_and_poll_status(monkeypatch) -> None:
     )
 
     # Complete the background job immediately for deterministic polling.
-    def fake_process_job(store, job_id, upload_path, crop, crop_x, crop_y, duration, start_time, end_time):
+    def fake_process_job(
+        store,
+        job_id,
+        upload_path,
+        crop,
+        crop_x,
+        crop_y,
+        duration,
+        start_time,
+        end_time,
+    ):
         assert crop_x == 240
         assert crop_y == 120
         store.update_job(
@@ -70,7 +87,14 @@ def test_create_process_job_and_poll_status(monkeypatch) -> None:
 
     create_response = client.post(
         "/process",
-        data={"duration": 30, "crop": "vertical", "cropX": 240, "cropY": 120, "startTime": 120, "endTime": 180},
+        data={
+            "duration": 30,
+            "crop": "vertical",
+            "cropX": 240,
+            "cropY": 120,
+            "startTime": 120,
+            "endTime": 180,
+        },
         files={"file": ("clip.mp4", b"data", "video/mp4")},
     )
 

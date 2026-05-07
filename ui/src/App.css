@@ -406,67 +406,6 @@
   opacity: 0.55;
 }
 
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 6px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(250, 204, 21, 0.24);
-  background: rgba(250, 204, 21, 0.12);
-  color: var(--color-accent);
-  font-size: 0.85rem;
-  text-transform: capitalize;
-}
-
-.status-panel {
-  gap: 8px;
-  padding: 14px 16px;
-}
-
-.status-copy {
-  margin: 0;
-  font-size: 0.84rem;
-}
-
-.status-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.status-metric {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: var(--color-surface-muted);
-}
-
-.status-metric-success {
-  border-color: var(--color-border);
-}
-
-.status-metric-error {
-  border-color: var(--color-border);
-}
-
-.status-metric-value {
-  font-size: 0.88rem;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--color-text);
-}
-
-.status-metric-label {
-  color: var(--color-text-subtle);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 .progress-track {
   overflow: hidden;
   position: relative;
@@ -692,10 +631,6 @@
   .range-metrics,
   .time-input-grid {
     grid-template-columns: 1fr;
-  }
-
-  .status-metrics {
-    gap: 8px;
   }
 
   .action-row button {

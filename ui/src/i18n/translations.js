@@ -29,24 +29,6 @@ function selectSlavicPluralForm(count, one, few, many) {
 }
 
 
-// Build the English status summary line.
-function buildEnglishStatusSummary(completed, failed, remaining) {
-  return `${completed} completed, ${failed} failed, ${remaining} remaining.`
-}
-
-
-// Build the Russian status summary line.
-function buildRussianStatusSummary(completed, failed, remaining) {
-  return `${completed} завершено, ${failed} с ошибкой, ${remaining} осталось.`
-}
-
-
-// Build the Ukrainian status summary line.
-function buildUkrainianStatusSummary(completed, failed, remaining) {
-  return `${completed} завершено, ${failed} з помилкою, ${remaining} залишилось.`
-}
-
-
 // Build the English output count line.
 function buildEnglishResultCount(count) {
   return `${count} file${count === 1 ? '' : 's'}`
@@ -104,13 +86,6 @@ const translations = {
     previewSeekLabel: 'Preview seek control',
     playPreview: 'Play preview',
     pausePreview: 'Pause preview',
-    statusTitle: 'Status',
-    statusEmpty: 'Upload files to create a processing queue.',
-    statusMetrics: {
-      completed: 'Completed',
-      failed: 'Failed',
-      remaining: 'Remaining',
-    },
     outputsTitle: 'Outputs',
     openOutput: 'Open output',
     cropModes: {
@@ -120,12 +95,6 @@ const translations = {
       square_1_1: 'Square 1:1',
       portrait_3_4: 'Portrait 3:4',
       horizontal: 'Horizontal 16:9',
-    },
-    screenStates: {
-      idle: 'idle',
-      loading: 'loading',
-      success: 'success',
-      error: 'error',
     },
     queueStates: {
       queued: 'queued',
@@ -159,7 +128,6 @@ const translations = {
       'No output files were generated.': 'No output files were generated.',
       'An unexpected error occurred.': 'An unexpected error occurred.',
     },
-    formatStatusSummary: buildEnglishStatusSummary,
     formatResultCount: buildEnglishResultCount,
   },
   ru: {
@@ -200,13 +168,6 @@ const translations = {
     previewSeekLabel: 'Ползунок перемотки превью',
     playPreview: 'Воспроизвести',
     pausePreview: 'Пауза',
-    statusTitle: 'Статус',
-    statusEmpty: 'Загрузи файлы, чтобы создать очередь обработки.',
-    statusMetrics: {
-      completed: 'Завершено',
-      failed: 'С ошибкой',
-      remaining: 'Осталось',
-    },
     outputsTitle: 'Результаты',
     openOutput: 'Открыть файл',
     cropModes: {
@@ -216,12 +177,6 @@ const translations = {
       square_1_1: 'Квадратный 1:1',
       portrait_3_4: 'Портретный 3:4',
       horizontal: 'Горизонтальный 16:9',
-    },
-    screenStates: {
-      idle: 'ожидание',
-      loading: 'обработка',
-      success: 'готово',
-      error: 'ошибка',
     },
     queueStates: {
       queued: 'в очереди',
@@ -255,7 +210,6 @@ const translations = {
       'No output files were generated.': 'Не удалось создать выходные файлы.',
       'An unexpected error occurred.': 'Произошла непредвиденная ошибка.',
     },
-    formatStatusSummary: buildRussianStatusSummary,
     formatResultCount: buildRussianResultCount,
   },
   ua: {
@@ -296,13 +250,6 @@ const translations = {
     previewSeekLabel: 'Повзунок перемотування превʼю',
     playPreview: 'Відтворити',
     pausePreview: 'Пауза',
-    statusTitle: 'Статус',
-    statusEmpty: 'Завантаж файли, щоб створити чергу обробки.',
-    statusMetrics: {
-      completed: 'Завершено',
-      failed: 'З помилкою',
-      remaining: 'Залишилось',
-    },
     outputsTitle: 'Результати',
     openOutput: 'Відкрити файл',
     cropModes: {
@@ -312,12 +259,6 @@ const translations = {
       square_1_1: 'Квадратний 1:1',
       portrait_3_4: 'Портретний 3:4',
       horizontal: 'Горизонтальний 16:9',
-    },
-    screenStates: {
-      idle: 'очікування',
-      loading: 'обробка',
-      success: 'готово',
-      error: 'помилка',
     },
     queueStates: {
       queued: 'у черзі',
@@ -351,7 +292,6 @@ const translations = {
       'No output files were generated.': 'Не вдалося створити вихідні файли.',
       'An unexpected error occurred.': 'Сталася непередбачена помилка.',
     },
-    formatStatusSummary: buildUkrainianStatusSummary,
     formatResultCount: buildUkrainianResultCount,
   },
 }
@@ -367,18 +307,6 @@ export function getCropOptions(copy) {
 }
 
 
-// Translate one global screen state label.
-export function translateScreenState(state, copy) {
-  return copy.screenStates[state] ?? state
-}
-
-
-// Translate one queue item status label.
-export function translateQueueState(state, copy) {
-  return copy.queueStates[state] ?? state
-}
-
-
 // Translate one runtime message emitted by the UI or backend.
 export function translateRuntimeMessage(message, copy) {
   return copy.runtimeMessages[message] ?? message
@@ -388,12 +316,6 @@ export function translateRuntimeMessage(message, copy) {
 // Translate one backend or client error message.
 export function translateErrorMessage(message, copy) {
   return copy.errorMessages[message] ?? message
-}
-
-
-// Format the queue summary line for the selected language.
-export function formatStatusSummary(copy, completed, failed, remaining) {
-  return copy.formatStatusSummary(completed, failed, remaining)
 }
 
 
