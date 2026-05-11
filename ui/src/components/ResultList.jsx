@@ -1,6 +1,11 @@
 import { API_BASE_URL } from '../config/constants'
 import { formatResultCount } from '../i18n/translations'
 
+// Build one output link that works in dev and same-origin production.
+function buildOutputUrl(outputUrl) {
+  return `${API_BASE_URL}${outputUrl}`
+}
+
 // Render generated files for one queue item.
 export default function ResultList({ outputs, copy }) {
   if (outputs.length === 0) {
@@ -21,7 +26,7 @@ export default function ResultList({ outputs, copy }) {
                 <span className="result-name">{output.name}</span>
               </div>
               <div className="result-meta">
-                <a href={`${API_BASE_URL}${output.url}`} target="_blank" rel="noreferrer">
+                <a href={buildOutputUrl(output.url)} target="_blank" rel="noreferrer">
                   {copy.openOutput}
                 </a>
               </div>

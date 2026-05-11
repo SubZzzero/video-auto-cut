@@ -23,3 +23,36 @@ def test_cleanup_temp_directory_clears_stale_uploads(monkeypatch, tmp_path) -> N
 
     assert temp_directory.exists()
     assert list(temp_directory.iterdir()) == []
+
+
+# Verify that packaged Windows builds use a writable local app data directory.
+def test_get_runtime_base_directory_uses_local_app_data_for_packaged_windows(
+    monkeypatch,
+    tmp_path,
+) -> None:
+    monkeypatch.setenv("LOCALAPPDATA", str(tmp_path / "LocalAppData"))
+    monkeypatch.delenv(config.DATA_DIR_ENV_VAR, raising=False)
+    monkeypatch.setattr(config.sys, "frozen", True, raising=False)
+    monkeypatch.setattr(config.sys, "platform", "win32")
+
+    runtime_directory = config.get_runtime_base_directory()
+
+    assert runtime_directory == tmp_path / "LocalAppData" / config.APP_NAME
+
+
+# Verify that an explicit data directory override wins over packaged defaults.
+def test_get_runtime_base_directory_uses_configured_override(monkeypatch, tmp_path) -> None:
+    configured_directory = tmp_path / "custom-data"
+    monkeypatch.setenv(config.DATA_DIR_ENV_VAR, str(configured_directory))
+
+    runtime_directory = config.get_runtime_base_directory()
+
+    assert runtime_directory == configured_directory.resolve()
+
+
+# Verify that packaged mode serves the built frontend by default.
+def test_should_serve_frontend_defaults_to_packaged_mode(monkeypatch) -> None:
+    monkeypatch.delenv(config.SERVE_UI_ENV_VAR, raising=False)
+    monkeypatch.setattr(config.sys, "frozen", True, raising=False)
+
+    assert config.should_serve_frontend() is True

@@ -1,0 +1,92 @@
+Video Auto Cutter Windows Installer Build Steps
+
+1. Build on a Windows 10 or Windows 11 machine.
+   Do not rely on Linux for the final installer build.
+
+2. Install the required tools on Windows.
+   - Python 3.11 or newer
+   - Node.js 20 or newer
+   - Inno Setup 6
+
+3. Open a terminal in the project root.
+
+4. Create a virtual environment.
+   py -3.11 -m venv .venv
+
+5. Install Python dependencies into the virtual environment.
+   .venv\Scripts\pip install -r requirements-dev.txt
+   .venv\Scripts\pip install pyinstaller
+
+6. Install frontend dependencies.
+   cd ui
+   npm install
+   cd ..
+
+7. Build the frontend production bundle.
+   cd ui
+   npm run build
+   cd ..
+
+8. Create an ffmpeg bundle directory in the project root.
+   mkdir ffmpeg
+
+9. Copy Windows FFmpeg binaries into that folder.
+   Required minimum file:
+   - ffmpeg\ffmpeg.exe
+
+10. If your FFmpeg distribution also includes required DLL files, copy them into the same ffmpeg folder.
+
+11. Run backend and frontend checks before packaging.
+   .venv\Scripts\ruff check .
+   .venv\Scripts\pytest
+   cd ui
+   npm run test -- --run
+   npm run lint
+   cd ..
+
+12. Build the Windows app bundle with PyInstaller.
+   .venv\Scripts\pyinstaller video_auto_cutter.spec --noconfirm
+
+13. Confirm the packaged output exists.
+   Expected folder:
+   - dist\VideoAutoCutter\
+
+14. Confirm the packaged app contains these important items.
+   - dist\VideoAutoCutter\VideoAutoCutter.exe
+   - dist\VideoAutoCutter\ui\dist\index.html
+   - dist\VideoAutoCutter\ffmpeg\ffmpeg.exe
+
+15. Build the installer with Inno Setup.
+   Open Inno Setup and compile:
+   - scripts\windows_installer.iss
+
+16. The installer output should appear here.
+   - dist-installer\video-auto-cutter-setup.exe
+
+17. Install the app from the generated installer.
+   The default path is under Program Files.
+
+18. Runtime data is written to the user profile, not Program Files.
+   Expected runtime base path:
+   %LOCALAPPDATA%\VideoAutoCutter\
+
+19. Generated outputs will appear under:
+   %LOCALAPPDATA%\VideoAutoCutter\outputs\
+
+20. Temporary uploads will appear under:
+   %LOCALAPPDATA%\VideoAutoCutter\temp\
+
+21. If the app starts but no UI opens, run the installed EXE directly once and check whether localhost access is blocked by security software.
+
+22. If the app opens but processing fails, verify the FFmpeg bundle first.
+   The packaged app expects a bundled ffmpeg binary or a valid VIDEO_AUTO_CUTTER_FFMPEG override.
+
+23. If PyInstaller misses OpenCV DLLs, rebuild after upgrading PyInstaller and verify the generated dist folder includes cv2-related binaries.
+
+24. For commercial release, plan these extra steps before shipping.
+   - code-sign the EXE and installer
+   - review FFmpeg and codec licensing
+   - prepare third-party license notices
+
+25. SmartScreen warning note.
+   Unsigned installers may show Windows SmartScreen warnings even when the build is correct.

@@ -1,5 +1,5 @@
 // Store frontend constants in one editable place.
-export const API_BASE_URL = 'http://localhost:8000'
+export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/$/, '')
 
 // Keep the default UI language in one place.
 export const DEFAULT_LANGUAGE = 'en'

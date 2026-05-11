@@ -7,7 +7,19 @@ from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 UI_DIR = ROOT_DIR / "ui"
-VENV_PYTHON = ROOT_DIR / ".venv" / "bin" / "python"
+VENV_PYTHON_CANDIDATES = (
+    ROOT_DIR / ".venv" / "bin" / "python",
+    ROOT_DIR / ".venv" / "Scripts" / "python.exe",
+)
+
+
+# Resolve the preferred Python executable for local development.
+def resolve_python_executable() -> str:
+    for candidate in VENV_PYTHON_CANDIDATES:
+        if candidate.exists():
+            return str(candidate)
+
+    return str(Path(sys.executable))
 
 
 # Start a subprocess in one working directory.
@@ -43,7 +55,7 @@ def monitor_processes(processes: list[subprocess.Popen]) -> int:
 
 # Start both development servers with one command.
 def main() -> int:
-    python_executable = str(VENV_PYTHON if VENV_PYTHON.exists() else Path(sys.executable))
+    python_executable = resolve_python_executable()
     backend_command = [python_executable, '-m', 'uvicorn', 'api.main:app', '--reload']
     frontend_command = ['npm', 'run', 'dev']
 
