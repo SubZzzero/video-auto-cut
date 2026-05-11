@@ -22,8 +22,9 @@
 
 .app-header p {
   margin: 0;
-  max-width: 720px;
+  max-width: 680px;
   color: var(--color-text-muted);
+  line-height: 1.45;
 }
 
 .app-grid {
@@ -33,7 +34,7 @@
 }
 
 .panel {
-  padding: 20px;
+  padding: 16px;
   border: 1px solid var(--color-border);
   border-radius: 16px;
   background: var(--color-surface);
@@ -46,7 +47,12 @@
 }
 
 .panel h2 {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.panel-intro {
+  display: grid;
+  gap: 4px;
 }
 
 .panel-heading {
@@ -62,36 +68,36 @@
 
 .stack {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
 .controls-panel {
-  gap: 14px;
+  gap: 12px;
 }
 
 .controls-header {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .settings-grid {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .field {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .setting-card {
   align-content: start;
   align-items: start;
-  gap: 12px;
-  grid-template-rows: minmax(72px, 1fr) auto;
-  min-height: 156px;
-  padding: 14px;
+  gap: 10px;
+  grid-template-rows: minmax(60px, 1fr) auto;
+  min-height: 136px;
+  padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: 14px;
   background: var(--color-surface-muted);
@@ -99,8 +105,8 @@
 
 .setting-copy {
   display: grid;
-  gap: 6px;
-  min-height: 56px;
+  gap: 4px;
+  min-height: 48px;
 }
 
 .field-label,
@@ -113,7 +119,7 @@
   margin: 0;
   color: var(--color-text-subtle);
   font-size: 0.85rem;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 .field input:not([type='range']),
@@ -126,7 +132,7 @@
   border: 1px solid var(--color-border-strong);
   background: var(--color-surface-muted);
   color: var(--color-text);
-  padding: 12px 14px;
+  padding: 11px 13px;
 }
 
 .upload-box input:hover,
@@ -164,7 +170,7 @@
 
 .upload-box {
   display: grid;
-  gap: 12px;
+  gap: 10px;
 }
 
 .upload-box input {
@@ -197,11 +203,21 @@
   color: var(--color-text-muted);
 }
 
+.hint,
+.queue-range,
+.queue-meta,
+.result-meta,
+.empty-copy,
+.upload-box p {
+  margin: 0;
+  line-height: 1.45;
+}
+
 .file-list,
 .queue-list,
 .result-list {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -210,8 +226,8 @@
 .queue-item,
 .result-item,
 .file-item {
-  padding: 12px 14px;
-  border-radius: 14px;
+  padding: 10px 12px;
+  border-radius: 12px;
   background: var(--color-surface-muted);
   border: 1px solid var(--color-border);
 }
@@ -224,7 +240,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   padding: 0;
   border: 0;
@@ -304,7 +320,7 @@
 
 .preview-transport {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   padding: 10px 12px;
   border: 1px solid var(--color-border);
   border-radius: 12px;
@@ -511,15 +527,15 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 4px;
 }
 
 .queue-item,
 .result-section,
 .result-item {
   display: grid;
-  gap: 12px;
+  gap: 8px;
 }
 
 .queue-name,
@@ -579,7 +595,7 @@
   align-items: center;
   gap: 10px;
   min-height: 48px;
-  padding: 12px 14px;
+  padding: 11px 13px;
   border-radius: 12px;
   border: 1px solid var(--color-border-strong);
   background: var(--color-surface-muted);
@@ -604,7 +620,7 @@
 
 .error-text {
   margin-top: 4px;
-  padding: 10px 12px;
+  padding: 9px 11px;
   border-radius: 12px;
   border: 1px solid rgba(250, 204, 21, 0.24);
   background: rgba(250, 204, 21, 0.08);
@@ -626,7 +642,7 @@
 
 @media (max-width: 720px) {
   .panel {
-    padding: 16px;
+    padding: 14px;
     border-radius: 16px;
   }
 

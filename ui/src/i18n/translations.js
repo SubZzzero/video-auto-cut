@@ -51,7 +51,7 @@ const translations = {
   en: {
     appTitle: 'Video Auto Cutter',
     appDescription:
-      'Upload local videos, choose the exact time range to process, split it into custom clips, apply a crop preset, and monitor progress in a compact batch queue.',
+      'Upload local videos, set precise cut ranges, split them into custom clips, and apply crop presets in one local batch workflow.',
     languageLabel: 'Language',
     filesTitle: 'Files',
     filesHint: 'Select one or more videos to process in a local queue.',
@@ -137,7 +137,7 @@ const translations = {
   ru: {
     appTitle: 'Video Auto Cutter',
     appDescription:
-      'Загружай локальные видео, выбирай точный диапазон обработки, режь его на клипы нужной длины, применяй crop и отслеживай прогресс в компактной очереди.',
+      'Загружай локальные видео, задавай точные диапазоны нарезки, разбивай их на клипы нужной длины и применяй crop-пресеты в одном локальном batch-процессе.',
     languageLabel: 'Язык',
     filesTitle: 'Файлы',
     filesHint: 'Выбери один или несколько роликов для обработки в локальной очереди.',
@@ -223,7 +223,7 @@ const translations = {
   ua: {
     appTitle: 'Video Auto Cutter',
     appDescription:
-      'Завантажуй локальні відео, обирай точний діапазон обробки, ріж його на кліпи потрібної довжини, застосовуй crop і стеж за прогресом у компактній черзі.',
+      'Завантажуй локальні відео, задавай точні діапазони нарізки, розбивай їх на кліпи потрібної довжини й застосовуй crop-пресети в одному локальному batch-процесі.',
     languageLabel: 'Мова',
     filesTitle: 'Файли',
     filesHint: 'Обери один або кілька роликів для обробки в локальній черзі.',

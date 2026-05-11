@@ -13,7 +13,7 @@ function formatQueueRange(item) {
 export default function QueueList({ items, copy }) {
   return (
     <section className="panel stack">
-      <div>
+      <div className="panel-intro">
         <h2>{copy.queueTitle}</h2>
         <p className="hint">{copy.queueHint}</p>
       </div>

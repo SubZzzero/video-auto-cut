@@ -2,7 +2,7 @@
 export default function FileUpload({ items, activeItemId, onChange, onSelect, disabled, copy }) {
   return (
     <section className="panel stack">
-      <div>
+      <div className="panel-intro">
         <h2>{copy.filesTitle}</h2>
         <p className="hint">{copy.filesHint}</p>
       </div>
