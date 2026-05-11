@@ -6,6 +6,8 @@ export default function Controls({
   activeItem,
   disabled,
   canSubmit,
+  canCancel,
+  isCancelling,
   onCropChange,
   onCropPositionChange,
   onDurationChange,
@@ -15,6 +17,7 @@ export default function Controls({
   onEndSliderChange,
   onVideoMetadataChange,
   onSubmit,
+  onCancel,
   copy,
 }) {
   const cropOptions = getCropOptions(copy)
@@ -84,9 +87,20 @@ export default function Controls({
         </div>
       </div>
       <div className="action-row">
-        <button type="button" disabled={!canSubmit || disabled} onClick={onSubmit}>
-          {copy.startProcessing}
-        </button>
+        {canCancel ? (
+          <button
+            type="button"
+            className="action-button-secondary"
+            disabled={isCancelling}
+            onClick={onCancel}
+          >
+            {copy.stopProcessing}
+          </button>
+        ) : (
+          <button type="button" disabled={!canSubmit || disabled} onClick={onSubmit}>
+            {copy.startProcessing}
+          </button>
+        )}
       </div>
     </section>
   )

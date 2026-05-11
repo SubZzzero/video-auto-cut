@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from app.video import splitter
+from app.video.cancellation import ProcessingCancelledError
 
 
 # Verify that exact multiples keep every chunk at the requested duration.
@@ -72,6 +73,7 @@ def test_split_by_duration_uses_selected_range(monkeypatch, tmp_path) -> None:
         120.0,
         188.0,
         lambda start_time, end_time: f"crop:{start_time:.0f}-{end_time:.0f}",
+        None,
     )
 
     assert outputs == [
@@ -83,4 +85,48 @@ def test_split_by_duration_uses_selected_range(monkeypatch, tmp_path) -> None:
         [str(tmp_path / "chunk_001.mp4"), "120.000", "150.000", "crop:120-150"],
         [str(tmp_path / "chunk_002.mp4"), "150.000", "180.000", "crop:150-180"],
         [str(tmp_path / "chunk_003.mp4"), "180.000", "188.000", "crop:180-188"],
+    ]
+
+
+# Verify that cancellation stops chunk rendering before the next ffmpeg invocation.
+def test_split_by_duration_stops_after_cancellation(monkeypatch, tmp_path) -> None:
+    commands: list[list[str]] = []
+    cancel_checks = 0
+
+    # Capture each generated trim command instead of invoking ffmpeg.
+    def fake_build_trim_command(
+        source_path,
+        output_path,
+        start_time,
+        end_time,
+        crop_filter,
+    ) -> list[str]:
+        return [str(output_path), f"{start_time:.3f}", f"{end_time:.3f}", crop_filter or "none"]
+
+    # Record the first chunk and then rely on cancellation before the second one.
+    def fake_run_ffmpeg_command(command: list[str]) -> None:
+        commands.append(command)
+
+    # Return False for the first chunk and True before the second chunk starts.
+    def should_cancel() -> bool:
+        nonlocal cancel_checks
+        cancel_checks += 1
+        return cancel_checks >= 2
+
+    monkeypatch.setattr(splitter, "build_trim_command", fake_build_trim_command)
+    monkeypatch.setattr(splitter, "run_ffmpeg_command", fake_run_ffmpeg_command)
+
+    with pytest.raises(ProcessingCancelledError, match="Processing cancelled."):
+        splitter.split_by_duration(
+            Path("input.mp4"),
+            tmp_path,
+            30,
+            120.0,
+            188.0,
+            lambda start_time, end_time: f"crop:{start_time:.0f}-{end_time:.0f}",
+            should_cancel,
+        )
+
+    assert commands == [
+        [str(tmp_path / "chunk_001.mp4"), "120.000", "150.000", "crop:120-150"],
     ]

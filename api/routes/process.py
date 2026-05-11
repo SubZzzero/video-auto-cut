@@ -139,3 +139,23 @@ async def get_job_status(
         )
     logger.info("Returned status %s for job %s.", job["status"], job_id)
     return JobStatusResponse.model_validate(job)
+
+
+# Request cancellation for one queued or running job.
+@router.post("/jobs/{job_id}/cancel", response_model=JobStatusResponse)
+async def cancel_job(
+    job_id: str,
+    job_store: Annotated[JobStore, Depends(get_job_store)],
+) -> JobStatusResponse:
+    """Request cancellation for one job."""
+
+    try:
+        job = job_store.request_cancel(job_id)
+    except KeyError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found.",
+        ) from error
+
+    logger.info("Requested cancellation for job %s with status %s.", job_id, job["status"])
+    return JobStatusResponse.model_validate(job)

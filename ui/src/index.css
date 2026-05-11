@@ -16,6 +16,9 @@
   --color-accent: #facc15;
   --color-accent-hover: #eab308;
   --color-accent-contrast: #0b0f14;
+  --color-danger: #dc2626;
+  --color-danger-hover: #b91c1c;
+  --color-danger-contrast: #fef2f2;
 }
 
 * {

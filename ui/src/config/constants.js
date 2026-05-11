@@ -51,6 +51,7 @@ export const QUEUE_STATUS = {
   queued: 'queued',
   uploading: 'uploading',
   processing: 'processing',
+  cancelled: 'cancelled',
   success: 'success',
   error: 'error',
 }

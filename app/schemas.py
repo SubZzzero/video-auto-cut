@@ -21,6 +21,7 @@ class JobState(str, Enum):
 
     QUEUED = "queued"
     PROCESSING = "processing"
+    CANCELLED = "cancelled"
     SUCCESS = "success"
     ERROR = "error"
 

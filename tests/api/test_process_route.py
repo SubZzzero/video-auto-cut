@@ -115,3 +115,43 @@ def test_create_process_job_and_poll_status(monkeypatch) -> None:
     assert status_payload["endTime"] == 180
     assert status_payload["outputs"][0]["name"] == "chunk_001.mp4"
     job_store.update_job(payload["jobId"], outputs=[])
+
+
+# Verify that a queued job can be cancelled through the API.
+def test_cancel_job(monkeypatch) -> None:
+    monkeypatch.setattr(
+        "api.routes.process.build_job_id",
+        lambda: "2026-05-11_14-50-00_000001",
+    )
+
+    # Leave the background task untouched so the route test can cancel the queued job.
+    def fake_process_job(
+        store,
+        job_id,
+        upload_path,
+        crop,
+        crop_x,
+        crop_y,
+        duration,
+        start_time,
+        end_time,
+    ):
+        return None
+
+    monkeypatch.setattr("api.routes.process.process_job", fake_process_job)
+
+    create_response = client.post(
+        "/process",
+        data={"duration": 30, "crop": "none", "startTime": 0, "endTime": 30},
+        files={"file": ("clip.mp4", b"data", "video/mp4")},
+    )
+
+    assert create_response.status_code == 202
+    payload = create_response.json()
+
+    cancel_response = client.post(f"/jobs/{payload['jobId']}/cancel")
+
+    assert cancel_response.status_code == 200
+    cancel_payload = cancel_response.json()
+    assert cancel_payload["status"] == JobState.CANCELLED
+    assert cancel_payload["message"] == "Processing cancelled."

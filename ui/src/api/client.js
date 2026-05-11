@@ -32,3 +32,10 @@ export async function getJobStatus(jobId) {
   const response = await client.get(`/jobs/${jobId}`)
   return response.data
 }
+
+
+// Request cancellation for one processing job.
+export async function cancelJob(jobId) {
+  const response = await client.post(`/jobs/${jobId}/cancel`)
+  return response.data
+}

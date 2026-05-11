@@ -24,6 +24,8 @@ test('keeps the duration input enabled', () => {
       activeItem={activeItem}
       disabled={false}
       canSubmit
+      canCancel={false}
+      isCancelling={false}
       onCropChange={() => {}}
       onCropPositionChange={() => {}}
       onDurationChange={() => {}}
@@ -33,6 +35,7 @@ test('keeps the duration input enabled', () => {
       onEndSliderChange={() => {}}
       onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
+      onCancel={() => {}}
       copy={copy}
     />,
   )
@@ -48,6 +51,8 @@ test('shows the chunk duration helper copy', () => {
       activeItem={activeItem}
       disabled={false}
       canSubmit
+      canCancel={false}
+      isCancelling={false}
       onCropChange={() => {}}
       onCropPositionChange={() => {}}
       onDurationChange={() => {}}
@@ -57,6 +62,7 @@ test('shows the chunk duration helper copy', () => {
       onEndSliderChange={() => {}}
       onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
+      onCancel={() => {}}
       copy={copy}
     />,
   )
@@ -72,6 +78,8 @@ test('shows crop helper copy and selected range details', () => {
       activeItem={{ ...activeItem, crop: 'vertical' }}
       disabled={false}
       canSubmit
+      canCancel={false}
+      isCancelling={false}
       onCropChange={() => {}}
       onCropPositionChange={() => {}}
       onDurationChange={() => {}}
@@ -81,6 +89,7 @@ test('shows crop helper copy and selected range details', () => {
       onEndSliderChange={() => {}}
       onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
+      onCancel={() => {}}
       copy={copy}
     />,
   )
@@ -101,6 +110,8 @@ test('calls onSubmit when the start button is clicked', () => {
       activeItem={activeItem}
       disabled={false}
       canSubmit
+      canCancel={false}
+      isCancelling={false}
       onCropChange={() => {}}
       onCropPositionChange={() => {}}
       onDurationChange={() => {}}
@@ -110,6 +121,7 @@ test('calls onSubmit when the start button is clicked', () => {
       onEndSliderChange={() => {}}
       onVideoMetadataChange={() => {}}
       onSubmit={onSubmit}
+      onCancel={() => {}}
       copy={copy}
     />,
   )
@@ -130,6 +142,8 @@ test('forwards start and end time input changes', () => {
       activeItem={activeItem}
       disabled={false}
       canSubmit
+      canCancel={false}
+      isCancelling={false}
       onCropChange={() => {}}
       onCropPositionChange={() => {}}
       onDurationChange={() => {}}
@@ -139,6 +153,7 @@ test('forwards start and end time input changes', () => {
       onEndSliderChange={() => {}}
       onVideoMetadataChange={() => {}}
       onSubmit={() => {}}
+      onCancel={() => {}}
       copy={copy}
     />,
   )
@@ -148,4 +163,37 @@ test('forwards start and end time input changes', () => {
 
   expect(onStartTimeChange).toHaveBeenCalledTimes(1)
   expect(onEndTimeChange).toHaveBeenCalledTimes(1)
+})
+
+
+// Verify that the start action is replaced with a stop button while processing is active.
+test('shows and forwards the stop button while processing is active', () => {
+  const onCancel = vi.fn()
+
+  render(
+    <Controls
+      activeItem={activeItem}
+      disabled
+      canSubmit
+      canCancel
+      isCancelling={false}
+      onCropChange={() => {}}
+      onCropPositionChange={() => {}}
+      onDurationChange={() => {}}
+      onStartTimeChange={() => {}}
+      onEndTimeChange={() => {}}
+      onStartSliderChange={() => {}}
+      onEndSliderChange={() => {}}
+      onVideoMetadataChange={() => {}}
+      onSubmit={() => {}}
+      onCancel={onCancel}
+      copy={copy}
+    />,
+  )
+
+  expect(screen.queryByRole('button', { name: /start processing/i })).not.toBeInTheDocument()
+
+  fireEvent.click(screen.getByRole('button', { name: /^stop$/i }))
+
+  expect(onCancel).toHaveBeenCalledTimes(1)
 })

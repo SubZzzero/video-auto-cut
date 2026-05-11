@@ -8,6 +8,7 @@ from app.config import (
     DEFAULT_CHUNK_DURATION,
     resolve_output_directory,
 )
+from app.video.cancellation import CancelCallback, ensure_not_cancelled
 from app.utils.files import list_output_files
 from app.video.crop import (
     build_crop_filter,
@@ -43,12 +44,15 @@ class VideoProcessor:
         self,
         options: ProcessOptions,
         update_progress: ProgressCallback,
+        should_cancel: CancelCallback = None,
     ) -> list[dict[str, str]]:
+        ensure_not_cancelled(should_cancel)
         output_directory = resolve_output_directory(options.job_id)
         crop_filter_resolver = self._build_crop_filter_resolver(options)
         selected_start, selected_end = self._resolve_selected_range(options)
 
         update_progress(10, "Preparing video processing.")
+        ensure_not_cancelled(should_cancel)
 
         update_progress(45, "Splitting selected range into chunks.")
         split_by_duration(
@@ -58,13 +62,16 @@ class VideoProcessor:
             selected_start,
             selected_end,
             crop_filter_resolver,
+            should_cancel,
         )
 
+        ensure_not_cancelled(should_cancel)
         update_progress(90, "Collecting generated output files.")
         outputs = [item.model_dump() for item in list_output_files(output_directory)]
         if not outputs:
             raise RuntimeError("No output files were generated.")
 
+        ensure_not_cancelled(should_cancel)
         update_progress(100, "Processing completed.")
         return outputs
 

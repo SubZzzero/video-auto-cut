@@ -40,6 +40,7 @@ class JobStore:
             "message": "Job queued.",
             "outputs": [],
             "error": None,
+            "cancelRequested": False,
         }
         with self._lock:
             self._jobs[job_id] = job
@@ -58,3 +59,31 @@ class JobStore:
                 raise KeyError(job_id)
             self._jobs[job_id].update(fields)
             return deepcopy(self._jobs[job_id])
+
+    # Mark one job for cancellation and update its visible state when possible.
+    def request_cancel(self, job_id: str) -> dict:
+        with self._lock:
+            if job_id not in self._jobs:
+                raise KeyError(job_id)
+
+            job = self._jobs[job_id]
+            if job["status"] in {JobState.SUCCESS, JobState.ERROR, JobState.CANCELLED}:
+                return deepcopy(job)
+
+            job["cancelRequested"] = True
+            if job["status"] == JobState.QUEUED:
+                job.update(
+                    status=JobState.CANCELLED,
+                    message="Processing cancelled.",
+                    error=None,
+                )
+            else:
+                job.update(message="Cancelling processing.")
+            return deepcopy(job)
+
+    # Return whether one job has a pending cancellation request.
+    def is_cancel_requested(self, job_id: str) -> bool:
+        with self._lock:
+            if job_id not in self._jobs:
+                raise KeyError(job_id)
+            return bool(self._jobs[job_id].get("cancelRequested", False))

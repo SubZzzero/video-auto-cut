@@ -4,8 +4,10 @@ import logging
 from pathlib import Path
 
 from api.services.job_store import JobStore
+from app.config import OUTPUTS_DIR
 from app.schemas import JobState
 from app.utils.files import remove_path
+from app.video.cancellation import ProcessingCancelledError
 from app.video.processor import ProcessOptions, VideoProcessor
 
 logger = logging.getLogger(__name__)
@@ -26,8 +28,14 @@ def process_job(
     processor = VideoProcessor()
     logger.info("Started background processing for job %s.", job_id)
 
+    # Return whether the current job has a pending cancellation request.
+    def should_cancel() -> bool:
+        return job_store.is_cancel_requested(job_id)
+
     # Push progress messages into the shared store.
     def update_progress(progress: int, message: str) -> None:
+        if should_cancel():
+            raise ProcessingCancelledError("Processing cancelled.")
         job_store.update_job(
             job_id,
             status=JobState.PROCESSING,
@@ -48,7 +56,10 @@ def process_job(
                 end_time=end_time,
             ),
             update_progress,
+            should_cancel,
         )
+        if should_cancel():
+            raise ProcessingCancelledError("Processing cancelled.")
         job_store.update_job(
             job_id,
             status=JobState.SUCCESS,
@@ -58,6 +69,16 @@ def process_job(
             error=None,
         )
         logger.info("Completed background processing for job %s.", job_id)
+    except ProcessingCancelledError:
+        logger.info("Background processing cancelled for job %s.", job_id)
+        remove_path(OUTPUTS_DIR / job_id)
+        job_store.update_job(
+            job_id,
+            status=JobState.CANCELLED,
+            message="Processing cancelled.",
+            outputs=[],
+            error=None,
+        )
     except Exception as error:  # pragma: no cover - broad by design for background jobs.
         logger.exception("Background processing failed for job %s.", job_id)
         job_store.update_job(

@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 
-import { createProcessJob, getJobStatus } from './api/client'
+import { cancelJob, createProcessJob, getJobStatus } from './api/client'
 import './App.css'
 import Controls from './components/Controls'
 import FileUpload from './components/FileUpload'
@@ -146,6 +146,10 @@ export default function App() {
   const [queueItems, setQueueItems] = useState([])
   const [activeItemId, setActiveItemId] = useState('')
   const [isRunning, setIsRunning] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const currentProcessingItemIdRef = useRef('')
+  const currentProcessingJobIdRef = useRef('')
+  const batchCancelRequestedRef = useRef(false)
 
   const copy = getTranslation(language)
   const activeItem = useMemo(
@@ -153,6 +157,7 @@ export default function App() {
     [activeItemId, queueItems],
   )
   const canSubmit = queueItems.length > 0 && queueItems.every(isQueueItemReady)
+  const canCancel = isRunning && activeItem?.id === currentProcessingItemIdRef.current && Boolean(currentProcessingJobIdRef.current)
 
   // Replace the queue when a new set of files is selected.
   async function handleFileChange(event) {
@@ -170,6 +175,14 @@ export default function App() {
   // Patch one queue item by id.
   function updateQueueItem(itemId, patch) {
     setQueueItems((current) => current.map((item) => (item.id === itemId ? { ...item, ...patch } : item)))
+  }
+
+  // Reset processing-tracking state after one batch finishes.
+  function resetProcessingState() {
+    currentProcessingItemIdRef.current = ''
+    currentProcessingJobIdRef.current = ''
+    batchCancelRequestedRef.current = false
+    setIsCancelling(false)
   }
 
   // Update the active queue item crop mode.
@@ -283,7 +296,11 @@ export default function App() {
         jobId,
       })
 
-      if (status.status === QUEUE_STATUS.success || status.status === QUEUE_STATUS.error) {
+      if (
+        status.status === QUEUE_STATUS.success
+        || status.status === QUEUE_STATUS.error
+        || status.status === QUEUE_STATUS.cancelled
+      ) {
         return status
       }
 
@@ -295,9 +312,17 @@ export default function App() {
   async function handleStartProcessing() {
     const itemsToProcess = queueItems.map((item) => ({ ...item }))
     setIsRunning(true)
+    batchCancelRequestedRef.current = false
 
     try {
       for (const item of itemsToProcess) {
+        if (batchCancelRequestedRef.current) {
+          break
+        }
+
+        currentProcessingItemIdRef.current = item.id
+        currentProcessingJobIdRef.current = ''
+        setActiveItemId(item.id)
         updateQueueItem(item.id, {
           status: QUEUE_STATUS.uploading,
           progress: 5,
@@ -307,14 +332,29 @@ export default function App() {
 
         try {
           const createdJob = await createProcessJob(item.file, item)
+          currentProcessingJobIdRef.current = createdJob.jobId
           updateQueueItem(item.id, {
             status: createdJob.status,
             progress: createdJob.progress,
             message: createdJob.message,
             jobId: createdJob.jobId,
           })
-          await waitForCompletion(item.id, createdJob.jobId)
+          const completedJob = await waitForCompletion(item.id, createdJob.jobId)
+          currentProcessingJobIdRef.current = ''
+          setIsCancelling(false)
+
+          if (completedJob.status === QUEUE_STATUS.cancelled) {
+            batchCancelRequestedRef.current = true
+            break
+          }
         } catch (error) {
+          currentProcessingJobIdRef.current = ''
+          setIsCancelling(false)
+
+          if (batchCancelRequestedRef.current) {
+            break
+          }
+
           updateQueueItem(item.id, {
             status: QUEUE_STATUS.error,
             progress: 100,
@@ -325,6 +365,35 @@ export default function App() {
       }
     } finally {
       setIsRunning(false)
+      resetProcessingState()
+    }
+  }
+
+  // Cancel the currently running backend job and stop the remaining batch.
+  async function handleCancelProcessing() {
+    const itemId = currentProcessingItemIdRef.current
+    const jobId = currentProcessingJobIdRef.current
+    if (!itemId || !jobId || isCancelling) {
+      return
+    }
+
+    setIsCancelling(true)
+
+    try {
+      const cancelledJob = await cancelJob(jobId)
+      batchCancelRequestedRef.current = true
+      updateQueueItem(itemId, {
+        status: cancelledJob.status,
+        progress: cancelledJob.progress,
+        message: cancelledJob.message,
+        outputs: cancelledJob.outputs,
+        error: cancelledJob.error ?? '',
+      })
+    } catch (error) {
+      setIsCancelling(false)
+      updateQueueItem(itemId, {
+        error: getErrorMessage(error),
+      })
     }
   }
 
@@ -353,6 +422,8 @@ export default function App() {
             activeItem={activeItem}
             disabled={isRunning}
             canSubmit={canSubmit}
+            canCancel={canCancel}
+            isCancelling={isCancelling}
             onCropChange={handleCropChange}
             onCropPositionChange={handleCropPositionChange}
             onDurationChange={handleDurationChange}
@@ -362,6 +433,7 @@ export default function App() {
             onEndSliderChange={handleEndSliderChange}
             onVideoMetadataChange={handleVideoMetadataChange}
             onSubmit={handleStartProcessing}
+            onCancel={handleCancelProcessing}
             copy={copy}
           />
           <QueueList items={queueItems} copy={copy} />

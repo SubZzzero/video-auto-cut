@@ -401,6 +401,16 @@
   background: var(--color-accent-hover);
 }
 
+.action-row .action-button-secondary {
+  background: var(--color-danger);
+  color: var(--color-danger-contrast);
+  border-color: transparent;
+}
+
+.action-row .action-button-secondary:hover:not(:disabled) {
+  background: var(--color-danger-hover);
+}
+
 .action-row button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
