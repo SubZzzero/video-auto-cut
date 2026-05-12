@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 
 import { cancelJob, createProcessJob, getJobStatus } from './api/client'
 import './App.css'
+import backgroundImage from '../../img/bg/bg.png'
 import Controls from './components/Controls'
 import FileUpload from './components/FileUpload'
 import LanguageSwitcher from './components/LanguageSwitcher'
@@ -156,6 +157,7 @@ export default function App() {
     () => queueItems.find((item) => item.id === activeItemId) ?? queueItems[0] ?? null,
     [activeItemId, queueItems],
   )
+  const hasFiles = queueItems.length > 0
   const canSubmit = queueItems.length > 0 && queueItems.every(isQueueItemReady)
   const canCancel = isRunning && activeItem?.id === currentProcessingItemIdRef.current && Boolean(currentProcessingJobIdRef.current)
 
@@ -398,18 +400,20 @@ export default function App() {
   }
 
   return (
-    <main className="app-shell">
-      <header className="app-header stack">
-        <div className="header-row">
-          <div>
-            <h1>{copy.appTitle}</h1>
-            <p>{copy.appDescription}</p>
-          </div>
-          <LanguageSwitcher language={language} onChange={handleLanguageChange} copy={copy} />
+    <main
+      className={`app-shell ${hasFiles ? 'app-shell-active' : 'app-shell-empty'}`}
+      style={{ '--app-background-image': `url(${backgroundImage})` }}
+    >
+      <div className="app-background-layer" aria-hidden="true" />
+      <header className="app-toolbar">
+        <div className="app-branding">
+          <span className="app-brand-mark">{copy.appTitle}</span>
+          <p className="app-description">{copy.appDescription}</p>
         </div>
+        <LanguageSwitcher language={language} onChange={handleLanguageChange} copy={copy} />
       </header>
-      <section className="app-grid">
-        <div className="stack">
+      <section className="app-stage">
+        <div className="app-grid">
           <FileUpload
             items={queueItems}
             activeItemId={activeItem?.id ?? ''}

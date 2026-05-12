@@ -34,3 +34,8 @@ ui/coverage/
 outputs/
 temp/
 *.log
+
+.kilo/
+AGENTS.md
+plan.md
+

@@ -1,5 +1,6 @@
 import VideoRangeEditor from './VideoRangeEditor'
 import { getCropOptions } from '../i18n/translations'
+import settingsIcon from '../../../img/ico/settings.png'
 
 // Render processing settings and the main action button.
 export default function Controls({
@@ -24,20 +25,30 @@ export default function Controls({
 
   if (!activeItem) {
     return (
-      <section className="panel stack controls-panel">
-        <div className="controls-header">
-          <h2>{copy.settingsTitle}</h2>
-          <p className="hint">{copy.settingsEmpty}</p>
+      <section className="panel panel-settings stack controls-panel">
+        <div className="panel-hero">
+          <div className="panel-icon-shell" aria-hidden="true">
+            <img src={settingsIcon} alt="" className="panel-icon" />
+          </div>
+          <div className="controls-header">
+            <h2>{copy.settingsTitle}</h2>
+            <p className="hint">{copy.settingsEmpty}</p>
+          </div>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="panel stack controls-panel">
-      <div className="controls-header">
-        <h2>{copy.settingsTitle}</h2>
-        <p className="hint">{copy.settingsHint}</p>
+    <section className="panel panel-settings stack controls-panel">
+      <div className="panel-hero">
+        <div className="panel-icon-shell" aria-hidden="true">
+          <img src={settingsIcon} alt="" className="panel-icon" />
+        </div>
+        <div className="controls-header">
+          <h2>{copy.settingsTitle}</h2>
+          <p className="hint">{copy.settingsHint}</p>
+        </div>
       </div>
       <VideoRangeEditor
         item={activeItem}

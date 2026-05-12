@@ -1,28 +1,32 @@
 :root {
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #f3f4f6;
-  background: #0b0f14;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
-  --color-bg: #0b0f14;
-  --color-surface: #121821;
-  --color-surface-muted: #161d27;
-  --color-border: #202938;
-  --color-border-strong: #2b3648;
-  --color-text: #f3f4f6;
-  --color-text-muted: #9ca3af;
-  --color-text-subtle: #6b7280;
-  --color-accent: #facc15;
-  --color-accent-hover: #eab308;
-  --color-accent-contrast: #0b0f14;
-  --color-danger: #dc2626;
-  --color-danger-hover: #b91c1c;
-  --color-danger-contrast: #fef2f2;
+  color: #f3f7ff;
+  background: #050a14;
+  --color-bg: #050a14;
+  --color-surface: rgba(12, 20, 34, 0.9);
+  --color-surface-muted: rgba(10, 17, 29, 0.82);
+  --color-border: rgba(71, 99, 148, 0.18);
+  --color-border-strong: rgba(90, 129, 194, 0.26);
+  --color-text: #f3f7ff;
+  --color-text-muted: #a5b4d0;
+  --color-text-subtle: #7f90af;
+  --color-accent: #5ea1ff;
+  --color-accent-hover: #7ab4ff;
+  --color-accent-contrast: #f7fbff;
+  --color-danger: #ef4444;
+  --color-danger-hover: #f87171;
+  --color-danger-contrast: #fff5f5;
 }
 
 * {
   box-sizing: border-box;
+}
+
+html {
+  background: var(--color-bg);
 }
 
 body {
@@ -60,7 +64,8 @@ a {
     border-color 160ms ease,
     color 160ms ease,
     box-shadow 160ms ease,
-    opacity 160ms ease;
+    opacity 160ms ease,
+    transform 160ms ease;
 }
 
 button:focus-visible,
@@ -68,18 +73,18 @@ input:focus-visible,
 select:focus-visible,
 a:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.18), 0 0 0 4px rgba(250, 204, 21, 0.42);
+  box-shadow: 0 0 0 2px rgba(94, 161, 255, 0.18), 0 0 0 4px rgba(94, 161, 255, 0.42);
 }
 
 a {
-  color: var(--color-accent);
+  color: #8bc2ff;
 }
 
 a:hover {
-  color: var(--color-accent-hover);
+  color: #b4d8ff;
 }
 
 ::selection {
-  background: rgba(250, 204, 21, 0.3);
+  background: rgba(94, 161, 255, 0.32);
   color: var(--color-text);
 }
