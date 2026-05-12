@@ -35,6 +35,7 @@ outputs/
 temp/
 *.log
 
+# Kilo-specific files
 .kilo/
 AGENTS.md
 plan.md
