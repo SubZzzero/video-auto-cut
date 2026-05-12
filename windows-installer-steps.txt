@@ -83,10 +83,5 @@ Video Auto Cutter Windows Installer Build Steps
 
 23. If PyInstaller misses OpenCV DLLs, rebuild after upgrading PyInstaller and verify the generated dist folder includes cv2-related binaries.
 
-24. For commercial release, plan these extra steps before shipping.
-   - code-sign the EXE and installer
-   - review FFmpeg and codec licensing
-   - prepare third-party license notices
-
-25. SmartScreen warning note.
+24. SmartScreen warning note.
    Unsigned installers may show Windows SmartScreen warnings even when the build is correct.
