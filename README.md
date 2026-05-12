@@ -71,7 +71,8 @@ Notes:
 
 - `npm install` may take a few minutes the first time.
 - Finished clips will appear in the `outputs` folder in the project root.
-- `http://localhost:8000` is used by the backend. Most users only need `http://localhost:5173`.
+- `scripts/run_local.py` automatically connects the frontend to the local backend at `http://127.0.0.1:8000`.
+- Most users only need `http://localhost:5173` in the browser.
 
 ## Easiest Way to Run on macOS / Linux
 
@@ -91,6 +92,11 @@ cd ..
 4. Open `http://localhost:5173` in your browser.
 5. To stop the app, press `Ctrl+C` in the terminal.
 
+Notes:
+
+- `scripts/run_local.py` automatically connects the frontend to the local backend at `http://127.0.0.1:8000`.
+- Finished clips will appear in the `outputs` folder in the project root.
+
 ## If the One-Command Start Does Not Work
 
 Sometimes it is easier to start the backend and frontend separately in two terminal windows.
@@ -107,6 +113,7 @@ Window 2:
 
 ```powershell
 cd ui
+$env:VITE_API_BASE_URL = "http://127.0.0.1:8000"
 npm run dev
 ```
 
@@ -122,7 +129,7 @@ Window 2:
 
 ```bash
 cd ui
-npm run dev
+VITE_API_BASE_URL=http://127.0.0.1:8000 npm run dev
 ```
 
 Then open `http://localhost:5173`.
@@ -144,6 +151,10 @@ Install Node.js and then reopen the terminal.
 ### `http://localhost:5173` does not open
 
 Most likely one of the commands failed. Check the terminal output for the error message. Another common reason is that port `5173` or `8000` is already being used by another program.
+
+### The page opens, but the app cannot reach the backend
+
+If you started the frontend manually with `npm run dev`, make sure `VITE_API_BASE_URL` points to `http://127.0.0.1:8000` before starting Vite.
 
 ## Ready-Made Windows Build
 

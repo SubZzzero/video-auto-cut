@@ -1,5 +1,6 @@
 """Start the backend and frontend with one command."""
 
+import os
 import subprocess
 import sys
 import time
@@ -11,6 +12,7 @@ VENV_PYTHON_CANDIDATES = (
     ROOT_DIR / ".venv" / "bin" / "python",
     ROOT_DIR / ".venv" / "Scripts" / "python.exe",
 )
+DEFAULT_DEV_API_BASE_URL = 'http://127.0.0.1:8000'
 
 
 # Resolve the preferred Python executable for local development.
@@ -23,8 +25,19 @@ def resolve_python_executable() -> str:
 
 
 # Start a subprocess in one working directory.
-def start_process(command: list[str], workdir: Path) -> subprocess.Popen:
-    return subprocess.Popen(command, cwd=workdir)
+def start_process(
+    command: list[str],
+    workdir: Path,
+    env: dict[str, str] | None = None,
+) -> subprocess.Popen:
+    return subprocess.Popen(command, cwd=workdir, env=env)
+
+
+# Keep the frontend pointed at the local backend unless overridden explicitly.
+def build_frontend_environment() -> dict[str, str]:
+    frontend_environment = os.environ.copy()
+    frontend_environment.setdefault('VITE_API_BASE_URL', DEFAULT_DEV_API_BASE_URL)
+    return frontend_environment
 
 
 # Stop child processes when the launcher exits.
@@ -61,7 +74,7 @@ def main() -> int:
 
     processes = [
         start_process(backend_command, ROOT_DIR),
-        start_process(frontend_command, UI_DIR),
+        start_process(frontend_command, UI_DIR, env=build_frontend_environment()),
     ]
 
     try:
