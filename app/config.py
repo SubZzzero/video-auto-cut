@@ -14,7 +14,11 @@ DATA_DIR_ENV_VAR = "VIDEO_AUTO_CUTTER_DATA_DIR"
 FFMPEG_PATH_ENV_VAR = "VIDEO_AUTO_CUTTER_FFMPEG"
 DEFAULT_LOCAL_HOST = "127.0.0.1"
 DEFAULT_LOCAL_PORT = 8765
-DEV_FRONTEND_ORIGINS = ("http://localhost:5173", "http://127.0.0.1:5173")
+DEV_FRONTEND_ORIGINS = tuple(
+    f"http://{host}:{port}"
+    for host in ("localhost", "127.0.0.1")
+    for port in range(5173, 5184)
+)
 
 DEFAULT_CHUNK_DURATION = 30
 DEFAULT_CROP_MODE = "none"

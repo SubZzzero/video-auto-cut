@@ -63,16 +63,18 @@ cd ..
 .venv\Scripts\python scripts\run_local.py
 ```
 
-5. Open `http://localhost:5173` in your browser.
-6. Keep the PowerShell window open while the app is running.
-7. To stop the app, go back to PowerShell and press `Ctrl+C`.
+5. Your browser should open automatically.
+6. If it does not, open the `Local` URL shown in the terminal.
+7. Keep the PowerShell window open while the app is running.
+8. To stop the app, go back to PowerShell and press `Ctrl+C`.
 
 Notes:
 
 - `npm install` may take a few minutes the first time.
 - Finished clips will appear in the `outputs` folder in the project root.
-- `scripts/run_local.py` automatically connects the frontend to the local backend at `http://127.0.0.1:8000`.
-- Most users only need `http://localhost:5173` in the browser.
+- `scripts/run_local.py` automatically connects the frontend to the backend it starts locally.
+- Most users do not need to type the URL manually.
+- If port `8000` or `5173` is already busy, `scripts/run_local.py` uses the next available local port automatically.
 
 ## Easiest Way to Run on macOS / Linux
 
@@ -89,13 +91,15 @@ cd ..
 .venv/bin/python scripts/run_local.py
 ```
 
-4. Open `http://localhost:5173` in your browser.
-5. To stop the app, press `Ctrl+C` in the terminal.
+4. Your browser should open automatically.
+5. If it does not, open the `Local` URL shown in the terminal.
+6. To stop the app, press `Ctrl+C` in the terminal.
 
 Notes:
 
-- `scripts/run_local.py` automatically connects the frontend to the local backend at `http://127.0.0.1:8000`.
+- `scripts/run_local.py` automatically connects the frontend to the backend it starts locally.
 - Finished clips will appear in the `outputs` folder in the project root.
+- If port `8000` or `5173` is already busy, `scripts/run_local.py` uses the next available local port automatically.
 
 ## If the One-Command Start Does Not Work
 
@@ -148,9 +152,9 @@ Try using `python` instead of `py`. If that does not help, reinstall Python and 
 
 Install Node.js and then reopen the terminal.
 
-### `http://localhost:5173` does not open
+### The browser does not open automatically
 
-Most likely one of the commands failed. Check the terminal output for the error message. Another common reason is that port `5173` or `8000` is already being used by another program.
+Check the terminal output for the `Local` URL and open it manually. If one of the commands failed, the error message will also be printed there. If port `5173` or `8000` is already being used, `scripts/run_local.py` should fall back to another free local port automatically.
 
 ### The page opens, but the app cannot reach the backend
 
