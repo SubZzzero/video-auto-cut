@@ -41,7 +41,7 @@ def start_process(
     workdir: Path,
     env: dict[str, str] | None = None,
 ) -> subprocess.Popen:
-    return subprocess.Popen(command, cwd=workdir, env=env)
+    return subprocess.Popen(command, cwd=workdir, env=env, shell=True)
 
 
 # Keep the frontend pointed at the local backend unless overridden explicitly.
